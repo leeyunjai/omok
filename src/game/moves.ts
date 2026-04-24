@@ -2,6 +2,7 @@ import { BoardState, PieceColor, Position } from './types';
 import { BOARD_SIZE, isValidPos } from './board';
 
 const WIN = 5;
+const DIRS: [number, number][] = [[0,1],[1,0],[1,1],[1,-1]];
 
 function countDir(
   board: BoardState,
@@ -15,8 +16,7 @@ function countDir(
 }
 
 export function checkWin(board: BoardState, row: number, col: number, color: PieceColor): boolean {
-  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-  for (const [dr, dc] of dirs) {
+  for (const [dr, dc] of DIRS) {
     if (1 + countDir(board, row, col, color, dr, dc) + countDir(board, row, col, color, -dr, -dc) >= WIN)
       return true;
   }
@@ -32,11 +32,14 @@ export function getValidMoves(board: BoardState): Position[] {
       hasAny = true;
       for (let dr = -2; dr <= 2; dr++)
         for (let dc = -2; dc <= 2; dc++) {
-          const nr = r+dr, nc = c+dc;
-          if (isValidPos(nr,nc) && !board[nr][nc]) near.add(`${nr},${nc}`);
+          const nr = r + dr, nc = c + dc;
+          if (isValidPos(nr, nc) && !board[nr][nc]) near.add(`${nr},${nc}`);
         }
     }
   }
   if (!hasAny) return [{ row: 7, col: 7 }];
-  return [...near].map(s => { const [r,c] = s.split(',').map(Number); return {row:r,col:c}; });
+  return [...near].map(s => {
+    const [rr, cc] = s.split(',').map(Number);
+    return { row: rr, col: cc };
+  });
 }
