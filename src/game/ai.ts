@@ -1,4 +1,5 @@
 import { BoardState, Difficulty, PieceColor, Position } from './types';
+import { DIFFICULTY_DEPTH, DIFFICULTY_MOVE_LIMIT } from './difficulty';
 import { checkWin, getValidMoves } from './moves';
 import { cloneBoard, isValidPos } from './board';
 
@@ -66,8 +67,8 @@ export function getBestMove(board: BoardState, ai: PieceColor, difficulty: Diffi
   const moves = getValidMoves(board);
   if (!moves.length) return null;
   if (difficulty === 'easy') return moves[Math.floor(Math.random() * moves.length)];
-  const depth = difficulty === 'normal' ? 3 : 5;
-  const limit = difficulty === 'normal' ? 10 : 20;
+  const depth = DIFFICULTY_DEPTH[difficulty];
+  const limit = DIFFICULTY_MOVE_LIMIT[difficulty];
   let best = moves[0];
   let bestVal = -Infinity;
   for (const { row, col } of moves.slice(0, limit)) {
