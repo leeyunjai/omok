@@ -8,7 +8,7 @@ export function GameInfo() {
         <div className="flex items-center gap-2">
           <span className="text-stone-400">차례:</span>
           <span className={currentPlayer==='black'?'text-stone-300 font-bold':'text-amber-100 font-bold'}>
-            {currentPlayer==='black'?'● 검은':'○ 희은'}
+            {currentPlayer==='black'?'● 검은':'○ 흰'}
           </span>
           {aiThinking && <span className="text-amber-500 text-xs animate-pulse">AI 생각 중…</span>}
         </div>
@@ -18,7 +18,7 @@ export function GameInfo() {
           <div className="text-2xl mb-1">🌟</div>
           <div>
             <span className={winner==='black'?'text-stone-300':'text-amber-100'}>
-              {winner==='black'?'검은 돌':'희은 돌'}
+              {winner==='black'?'검은 돌':'흰 돌'}
             </span>
             <span className="text-amber-200"> 승리!</span>
           </div>
