@@ -5,6 +5,11 @@ import { Difficulty } from '../game/types';
 export function Menu() {
   const [diff, setDiff] = useState<Difficulty>('normal');
   const start = useGameStore(s => s.startGame);
+  const difficultyLabel: Record<Difficulty, string> = {
+    easy: '쉬움',
+    normal: '중간',
+    hard: '어려움',
+  };
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-stone-900 text-amber-100 px-4">
       <div className="text-center mb-10">
@@ -20,7 +25,7 @@ export function Menu() {
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                   diff===d ? 'bg-amber-500 text-stone-900' : 'bg-stone-700 text-amber-200 hover:bg-stone-600'
                 }`}>
-                {d==='easy'?'쉬움':d==='normal'?'보통':'어려움'}
+                {difficultyLabel[d]}
               </button>
             ))}
           </div>
