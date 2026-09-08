@@ -184,6 +184,22 @@ export const GAMES: GameMeta[] = [
     tags: ['액션', '싱글', '점수'],
     accent: '#edc22e',
   },
+  {
+    id: 'breakout',
+    title: '벽돌깨기',
+    subtitle: 'BREAKOUT',
+    emoji: '🏓',
+    desc: '패들 어디에 맞느냐로 각이 갈립니다. 떨어지는 아이템 세 가지와 판마다 달라지는 배치.',
+    controls: '드래그 · 방향키',
+    tags: ['액션', '싱글', '점수'],
+    category: '액션',
+    lore: [
+      '벽은 한 번에 무너지지 않는다.',
+      '각도를 만드는 건 공이 아니라 받는 쪽이다.',
+      '놓친 공만큼 배운다.',
+    ],
+    accent: '#5eead4',
+  },
 ];
 
 export function gameById(id: string): GameMeta {

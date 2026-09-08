@@ -109,6 +109,7 @@ export default defineConfig(({ mode }) => ({
         nonogram: resolve(__dirname, 'games/nonogram/index.html'),
         solitaire: resolve(__dirname, 'games/solitaire/index.html'),
         g2048: resolve(__dirname, 'games/2048/index.html'),
+        breakout: resolve(__dirname, 'games/breakout/index.html'),
       },
     },
   },
