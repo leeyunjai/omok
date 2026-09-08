@@ -200,6 +200,22 @@ export const GAMES: GameMeta[] = [
     ],
     accent: '#5eead4',
   },
+  {
+    id: 'yut',
+    title: '윷놀이',
+    subtitle: 'YUT NORI · 윷',
+    emoji: '🎲',
+    desc: '도개걸윷모와 뒤도, 지름길과 업기·잡기까지 갖춘 윷놀이. AI 대전과 2인 대국.',
+    controls: '던지기 · 말 선택',
+    lore: [
+      '던지기 전까지는 아무도 모른다.',
+      '먼저 간 말이 잡히고, 뒤처진 말이 지름길을 탄다.',
+      '업을지 흩을지, 그것만이 내 몫이다.',
+    ],
+    category: '보드',
+    tags: ['보드', 'AI 대전', '2인'],
+    accent: '#f0873c',
+  },
 ];
 
 export function gameById(id: string): GameMeta {
