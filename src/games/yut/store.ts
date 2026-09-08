@@ -13,9 +13,20 @@ const store = createStore('yut');
 const PREF_KEY = 'pref';
 const SAVE_KEY = 'game';
 const AI_DELAY = 620;
+/** 윷가락이 구르다 멎을 때까지 — yut.css의 ytTumble과 맞춘다 */
+export const THROW_ANIM = 780;
+/** 윷·모가 계속 나올 때 무한 루프를 막는다 */
+const MAX_PENDING = 8;
 
 export type Mode = 'vs-ai' | 'vs-human';
 export type Phase = 'menu' | 'throwing' | 'moving' | 'ended';
+
+/** 방금 벌어진 일을 판 위에 잠깐 표시한다 */
+export interface Fx {
+  id: number;
+  node: string;
+  kind: 'capture' | 'finish';
+}
 
 interface Prefs {
   difficulty: Difficulty;
@@ -33,9 +44,17 @@ interface State extends Prefs {
   game: GameState;
   mode: Mode;
   phase: Phase;
-  /** 방금 던진 결과 (연출용) */
+  /** 방금 던진 결과 */
   lastThrow: Throw | null;
+  /** 윷가락 네 개의 상태 — true면 배(평평한 면)가 위 */
   sticks: boolean[];
+  /** 던질 때마다 늘어난다. 연출을 다시 재생하는 키로 쓴다 */
+  throwId: number;
+  /** 윷가락이 아직 구르는 중 */
+  rolling: boolean;
+  /** 윷·모가 나와서 한 번 더 던져야 하는 상태 */
+  bonus: boolean;
+  fx: Fx | null;
   selected: number | null;
   /** 화면에 띄울 안내 */
   message: string | null;
@@ -58,12 +77,23 @@ export function loadSavedGame(): Saved | null {
   return s;
 }
 
+const sideName = (p: Player) => (p === 'blue' ? '청' : '홍');
+
 export const useYut = create<State>()((set, get) => {
   const prefs: Prefs = {
     difficulty: 'normal',
     playerSide: 'blue',
     ...store.get<Partial<Prefs>>(PREF_KEY, {}),
   };
+
+  let fxId = 0;
+  let fxTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showFx(node: string, kind: Fx['kind']) {
+    if (fxTimer) clearTimeout(fxTimer);
+    set({ fx: { id: ++fxId, node, kind } });
+    fxTimer = setTimeout(() => set({ fx: null }), 900);
+  }
 
   function persist() {
     const s = get();
@@ -99,7 +129,7 @@ export const useYut = create<State>()((set, get) => {
       return;
     }
     const next = { ...s.game, pending: [], turn: other(s.game.turn) };
-    set({ game: next, phase: 'throwing', selected: null });
+    set({ game: next, phase: 'throwing', selected: null, bonus: false });
     persist();
     if (!isMyTurn()) scheduleAi();
   }
@@ -110,8 +140,11 @@ export const useYut = create<State>()((set, get) => {
     set({ aiThinking: true });
     setTimeout(() => {
       const cur = get();
-      if (cur.phase === 'ended' || cur.game.turn === cur.playerSide) { set({ aiThinking: false }); return; }
-      if (cur.game.pending.length === 0) { set({ aiThinking: false }); get().rollDice(); return; }
+      if (cur.phase === 'ended' || cur.phase === 'menu' || cur.game.turn === cur.playerSide) {
+        set({ aiThinking: false });
+        return;
+      }
+      if (cur.phase === 'throwing') { set({ aiThinking: false }); get().rollDice(); return; }
       const move = pickMove(cur.game, cur.difficulty);
       set({ aiThinking: false });
       if (!move) { finishTurn(); return; }
@@ -119,17 +152,75 @@ export const useYut = create<State>()((set, get) => {
     }, AI_DELAY);
   }
 
+  /** 윷가락이 멎은 다음 — 결과를 판에 반영한다 */
+  function settleThrow(result: Throw, id: number) {
+    const s = get();
+    /* 구르는 사이에 메뉴로 나갔거나 다시 던졌다면 버린다 */
+    if (s.throwId !== id || s.phase === 'menu' || s.phase === 'ended') return;
+
+    const pending = [...s.game.pending, result];
+    const game = { ...s.game, pending };
+    const who = sideName(s.game.turn);
+    const label = THROW_LABEL[result];
+    const again = isBonusThrow(result) && pending.length < MAX_PENDING;
+
+    const log = [`${who} ${label}${again ? ' — 한 번 더' : ''}`, ...s.log].slice(0, 8);
+
+    if (again) {
+      sfx.levelUp();
+      set({
+        game, log, rolling: false, bonus: true,
+        phase: 'throwing',
+        message: `${label}! 한 번 더 던지세요`,
+      });
+      persist();
+      if (!isMyTurn()) scheduleAi();
+      return;
+    }
+
+    const all = pending.map((t) => THROW_LABEL[t]).join(' + ');
+    if (legalMoves(game).length === 0) {
+      set({
+        game: { ...game, pending: [], turn: other(game.turn) },
+        log, rolling: false, bonus: false,
+        phase: 'throwing',
+        selected: null,
+        message: `${all} — 쓸 수 있는 말이 없어 차례를 넘깁니다`,
+      });
+      persist();
+      if (!isMyTurn()) scheduleAi();
+      return;
+    }
+
+    set({
+      game, log, rolling: false, bonus: false,
+      phase: 'moving',
+      selected: autoSelect(game),
+      message: `${all} — 갈 자리를 누르세요`,
+    });
+    persist();
+    if (!isMyTurn()) scheduleAi();
+  }
+
+  const fresh = {
+    lastThrow: null as Throw | null,
+    sticks: [] as boolean[],
+    rolling: false,
+    bonus: false,
+    fx: null as Fx | null,
+    selected: null as number | null,
+    message: null as string | null,
+    log: [] as string[],
+  };
+
   return {
     ...prefs,
     game: createGame(),
-    mode: 'vs-ai',
-    phase: 'menu',
-    lastThrow: null,
-    sticks: [],
-    selected: null,
-    message: null,
+    mode: 'vs-ai' as Mode,
+    phase: 'menu' as Phase,
+    throwId: 0,
     aiThinking: false,
-    log: [],
+    ...fresh,
 
     setPref: (patch) => {
       const next = { difficulty: get().difficulty, playerSide: get().playerSide, ...patch };
@@ -140,16 +231,7 @@ export const useYut = create<State>()((set, get) => {
     startGame: (mode) => {
       store.remove(SAVE_KEY);
       clearProgress('yut');
-      set({
-        game: createGame('blue'),
-        mode,
-        phase: 'throwing',
-        lastThrow: null,
-        sticks: [],
-        selected: null,
-        message: null,
-        log: [],
-      });
+      set({ ...fresh, game: createGame('blue'), mode, phase: 'throwing' });
       if (!isMyTurn()) scheduleAi();
     },
 
@@ -157,81 +239,42 @@ export const useYut = create<State>()((set, get) => {
       const saved = loadSavedGame();
       if (!saved) return;
       set({
+        ...fresh,
         game: saved.game,
         mode: saved.mode,
         difficulty: saved.difficulty,
         playerSide: saved.playerSide,
         phase: saved.game.pending.length > 0 ? 'moving' : 'throwing',
-        selected: null,
-        message: null,
-        log: [],
       });
       if (!isMyTurn()) scheduleAi();
     },
 
     rollDice: () => {
       const s = get();
-      if (s.phase === 'ended' || s.phase === 'menu') return;
-      if (s.game.pending.length > 0) return;
+      if (s.phase !== 'throwing' || s.rolling) return;
 
       const { result, sticks } = throwYut();
       sfx.drop();
-
-      const pending = [result];
-      /* 윷·모는 한 번 더 — 연달아 나오면 계속 쌓인다 */
-      let extra = isBonusThrow(result);
-      let guard = 0;
-      while (extra && guard++ < 6) {
-        const again = throwYut();
-        pending.push(again.result);
-        extra = isBonusThrow(again.result);
-      }
-
-      const game = { ...s.game, pending };
-      const label = pending.map((t) => THROW_LABEL[t]).join(' + ');
-      const moves = legalMoves(game);
-
-      if (moves.length === 0) {
-        /* 쓸 수 있는 수가 없으면 차례가 넘어간다 */
-        set({
-          game: { ...game, pending: [], turn: other(game.turn) },
-          lastThrow: result,
-          sticks,
-          phase: 'throwing',
-          message: `${label} — 움직일 수 있는 말이 없어 차례를 넘깁니다`,
-          log: [`${game.turn === 'blue' ? '청' : '홍'} ${label} (통과)`, ...s.log].slice(0, 8),
-        });
-        persist();
-        if (!isMyTurn()) scheduleAi();
-        return;
-      }
-
-      set({
-        game,
-        lastThrow: result,
-        sticks,
-        phase: 'moving',
-        selected: autoSelect(game),
-        message: `${label} — 갈 자리를 누르세요`,
-        log: [`${game.turn === 'blue' ? '청' : '홍'} ${label}`, ...s.log].slice(0, 8),
-      });
-      persist();
-      if (!isMyTurn()) scheduleAi();
+      const id = s.throwId + 1;
+      set({ rolling: true, sticks, lastThrow: result, throwId: id, message: null, selected: null });
+      setTimeout(() => settleThrow(result, id), THROW_ANIM);
     },
 
-    selectPiece: (pieceId) => set({ selected: pieceId, message: null }),
+    selectPiece: (pieceId) => set({ selected: pieceId }),
 
     playMove: (move) => {
       const s = get();
-      if (s.phase !== 'moving') return;
+      if (s.phase !== 'moving' || s.rolling) return;
 
       const res = applyMove(s.game, move);
       if (res.captured > 0) sfx.capture(); else sfx.place();
 
-      const who = s.game.turn === 'blue' ? '청' : '홍';
+      const who = sideName(s.game.turn);
       const notes: string[] = [];
       if (res.captured > 0) notes.push(`${res.captured}말 잡음`);
       if (res.finished > 0) notes.push(`${res.finished}말 완주`);
+      if (res.captured > 0) showFx(move.to, 'capture');
+      else if (res.finished > 0) showFx('o19', 'finish');
 
       set({
         game: res.state,
@@ -253,7 +296,13 @@ export const useYut = create<State>()((set, get) => {
 
       if (res.extraTurn) {
         /* 잡으면 한 번 더 던진다 */
-        set({ game: { ...res.state, pending: [] }, phase: 'throwing' });
+        set({
+          game: { ...res.state, pending: [] },
+          phase: 'throwing',
+          bonus: true,
+          selected: null,
+          message: `${who} 잡았습니다 — 한 번 더 던지세요`,
+        });
         persist();
         if (!isMyTurn()) scheduleAi();
         return;
@@ -261,19 +310,11 @@ export const useYut = create<State>()((set, get) => {
       finishTurn();
     },
 
-    goToMenu: () => set({ phase: 'menu', selected: null, aiThinking: false }),
+    goToMenu: () => set({ ...fresh, phase: 'menu', aiThinking: false }),
 
     restart: () => {
       const s = get();
-      set({
-        game: createGame('blue'),
-        phase: 'throwing',
-        lastThrow: null,
-        sticks: [],
-        selected: null,
-        message: null,
-        log: [],
-      });
+      set({ ...fresh, game: createGame('blue'), phase: 'throwing' });
       if (s.mode === 'vs-ai' && s.playerSide !== 'blue') scheduleAi();
     },
   };
