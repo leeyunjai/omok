@@ -56,7 +56,9 @@
 | `sound.ts` | WebAudio 합성 효과음. 오디오 파일 없음 |
 | `tutorial.ts` | 튜토리얼 자료형 + 최초 1회 자동 표시 여부 |
 | `daily.ts` | 날짜 시드로 정하는 오늘의 문제 + 연속 일수 기록 |
+| `color.ts` | 색 밝기·투명도 (캔버스 그러데이션용) |
 | `react/GameShell.tsx` | 공통 상단바(허브 링크·제목·도움말·효과음) + 튜토리얼 |
+| `react/GameMark.tsx` | 게임마다 하나씩 있는 표식(SVG). 허브 카드와 상단바가 같은 그림을 씁니다 |
 | `react/useKeys.ts` | 전역 단축키 |
 | `dom/shell.ts`, `dom/tutorial.ts` | React를 쓰지 않는 게임(스도쿠)용 같은 기능 |
 | `pwa.ts` | 서비스 워커 등록 |
