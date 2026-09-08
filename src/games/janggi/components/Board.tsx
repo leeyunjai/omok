@@ -162,7 +162,6 @@ export function Board() {
     );
   }
 
-  const riverY = (py(4) + py(5)) / 2;
 
   const intersectionDots = [];
   for (let r = 0; r < ROWS; r++) {
@@ -245,11 +244,6 @@ export function Board() {
             <stop offset="0%" stopColor="rgba(0,0,0,0)" />
             <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
           </linearGradient>
-          <linearGradient id="riverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(60,100,180,0.08)" />
-            <stop offset="50%" stopColor="rgba(60,100,180,0.14)" />
-            <stop offset="100%" stopColor="rgba(60,100,180,0.08)" />
-          </linearGradient>
         </defs>
 
         {/* 나무 프레임 */}
@@ -263,16 +257,12 @@ export function Board() {
 
         {/* 판면 */}
         <rect x={12} y={12} width={W - 24} height={H - 24} fill="url(#surfaceGrad)" rx={6} />
-        <rect x={12} y={py(4) + 8} width={W - 24} height={py(5) - py(4) - 16} fill="url(#riverGrad)" />
         <rect x={12} y={12} width={W - 24} height={8} fill="rgba(0,0,0,0.22)" rx={6} />
         <rect x={12} y={12} width={8} height={H - 24} fill="rgba(0,0,0,0.14)" />
         <rect x={12} y={12} width={W - 24} height={H - 24} fill="url(#vignetteGrad)" rx={6} />
         <rect x={12} y={12} width={W - 24} height={H - 24} fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth={2.5} rx={6} />
 
         {gridLines}
-
-        <line x1={px(0)} y1={riverY} x2={px(COLS - 1)} y2={riverY}
-          stroke="rgba(60,100,200,0.25)" strokeWidth={2} strokeDasharray="6 4" />
 
         {intersectionDots}
 
@@ -285,11 +275,6 @@ export function Board() {
             <line x1={px(5)} y1={py(top)} x2={px(3)} y2={py(top + 2)} stroke="#8a6828" strokeWidth="1.4" />
           </g>
         ))}
-
-        <text x={px(2)} y={riverY + 1} textAnchor="middle" dominantBaseline="middle"
-          fill="#6a4a18" fontSize={15} fontFamily="serif" fontWeight="bold" opacity={0.85}>楚河</text>
-        <text x={px(6)} y={riverY + 1} textAnchor="middle" dominantBaseline="middle"
-          fill="#6a4a18" fontSize={15} fontFamily="serif" fontWeight="bold" opacity={0.85}>漢界</text>
 
         {/* 마지막 수: 출발 → 도착 */}
         {last && (
