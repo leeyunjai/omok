@@ -136,6 +136,22 @@ export const GAMES: GameMeta[] = [
     tags: ['퍼즐', '싱글', '기록'],
     accent: '#5aa0f0',
   },
+  {
+    id: 'nonogram',
+    title: '노노그램',
+    subtitle: 'NONOGRAM · 네모로직',
+    emoji: '🖼️',
+    desc: '가장자리 숫자를 읽어 그림을 찾는 논리 퍼즐. 줄 논리만으로 전부 풀리는 문제만 출제.',
+    controls: '탭 · 밀어서 칠하기',
+    lore: [
+      '숫자는 길이만 알려 준다. 어디인지는 말해 주지 않는다.',
+      '겹치는 자리부터 하나씩.',
+      '다 칠하고 나면 그림이 남는다.',
+    ],
+    category: '퍼즐',
+    tags: ['퍼즐', '싱글', '기록'],
+    accent: '#a78bfa',
+  },
 ];
 
 export function gameById(id: string): GameMeta {
