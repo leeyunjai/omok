@@ -49,10 +49,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: auto;
 }
 .ms-board {
   display: grid;
   gap: 2px;
+  -webkit-touch-callout: none;
   padding: 6px;
   border-radius: 12px;
   background: #151a24;
@@ -61,6 +63,8 @@
   user-select: none;
 }
 .ms-cell {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
   width: var(--ms-cell);
   height: var(--ms-cell);
   display: grid;

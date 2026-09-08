@@ -141,7 +141,7 @@ export default function App() {
         className="ms-root"
         style={{
           ['--ms-cell' as string]:
-            `min((100dvh - 300px) / ${spec.rows}, (100vw - 40px) / ${spec.cols}, 44px)`,
+            `clamp(18px, min((100dvh - 300px) / ${spec.rows}, (100vw - 40px) / ${spec.cols}), 44px)`,
         }}
       >
         <div className="ms-levels">

@@ -1,7 +1,7 @@
 /* 모바일 퍼스트 */
 .kk-root {
   /* 자판(4줄) · 상단 · 알림 · 셸을 뺀 나머지 높이에 격자 8줄이 들어가도록 칸 크기를 정한다 */
-  --kk-cell: min((100dvh - 372px) / 8, (100vw - 48px) / 6.4, 54px);
+  --kk-cell: clamp(18px, min((100dvh - 372px) / 8, (100vw - 48px) / 6.4), 54px);
   flex: 1;
   min-height: 0;
   display: flex;
@@ -47,6 +47,7 @@
 .kk-board {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -180,4 +181,12 @@
   .kk-top, .kk-keyboard, .kk-message { width: 100%; max-width: 460px; }
   .kk-board { width: 100%; }
   .kk-key { min-height: 52px; }
+}
+
+/* 가로로 눕힌 화면 — 자판과 격자를 함께 줄인다 */
+@media (max-height: 520px) {
+  .kk-root { --kk-cell: clamp(16px, (100dvh - 232px) / 8, 32px); gap: 5px; }
+  .kk-key { min-height: 34px; font-size: 0.8rem; }
+  .kk-message { min-height: 0; font-size: 0.7rem; }
+  .kk-modes button { min-height: 34px; }
 }

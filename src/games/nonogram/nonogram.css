@@ -45,6 +45,7 @@
   align-items: center;
   justify-content: center;
   overflow: auto;
+  padding: 2px;
 }
 .ng-board {
   display: grid;
@@ -68,6 +69,8 @@
 .ng-clue.done { color: #4b5568; }
 
 .ng-cell {
+  touch-action: none;
+  -webkit-touch-callout: none;
   width: var(--ng-cell);
   height: var(--ng-cell);
   border-radius: 2px;

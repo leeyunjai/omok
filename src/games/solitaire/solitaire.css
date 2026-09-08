@@ -1,6 +1,6 @@
 /* 모바일 퍼스트 */
 .sl-root {
-  --sl-card-w: min((100vw - 30px) / 7, 62px);
+  --sl-card-w: clamp(30px, min((100vw - 30px) / 7, (100dvh - 170px) / 5.2), 62px);
   --sl-card-h: calc(var(--sl-card-w) * 1.42);
   --sl-stack: calc(var(--sl-card-h) * 0.28);
   flex: 1;
@@ -51,6 +51,7 @@
 .sl-pile { position: relative; min-height: var(--sl-card-h); }
 
 .sl-slot {
+  touch-action: manipulation;
   width: var(--sl-card-w);
   height: var(--sl-card-h);
   border-radius: 6px;
@@ -65,6 +66,9 @@
 .sl-slot.drop { border-color: #10a37f; background: rgba(16, 163, 127, 0.18); }
 
 .sl-card {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  user-select: none;
   position: absolute;
   left: 0;
   width: var(--sl-card-w);
@@ -151,7 +155,13 @@
 }
 .sl-btn.ghost { background: rgba(255, 255, 255, 0.08); color: #eef1f7; }
 
-@media (min-width: 720px) {
+@media (max-height: 520px) {
+  .sl-root { gap: 5px; }
+  .sl-controls button { min-height: 42px; }
+  .sl-stats { font-size: 0.66rem; }
+}
+
+@media (min-width: 720px) and (min-height: 640px) {
   .sl-root { --sl-card-w: 72px; align-items: center; padding: 12px; }
   .sl-stats, .sl-controls, .sl-message { width: 100%; max-width: 560px; }
 }

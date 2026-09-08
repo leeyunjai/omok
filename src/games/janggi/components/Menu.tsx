@@ -35,7 +35,7 @@ export function Menu() {
         <button key={s}
           onClick={() => setPref(side === 'cho' ? { setupCho: s } : { setupHan: s })}
           aria-pressed={value === s}
-          className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors focus-ring ${
+          className={`flex-1 min-h-[44px] py-1.5 rounded-lg text-[11px] font-semibold transition-colors focus-ring ${
             value === s
               ? (side === 'cho' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white')
               : 'bg-stone-700/70 text-amber-200 hover:bg-stone-600'

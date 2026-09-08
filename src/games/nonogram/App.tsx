@@ -138,7 +138,7 @@ export default function App() {
         className="ng-root"
         style={{
           ['--ng-cell' as string]:
-            `min((100dvh - 300px) / ${size + maxColClue}, (100vw - 34px) / ${size + maxRowClue * 0.7}, 34px)`,
+            `clamp(14px, min((100dvh - 300px) / ${size + maxColClue}, (100vw - 34px) / ${size + maxRowClue * 0.7}), 34px)`,
         }}
       >
         <div className="ng-levels">

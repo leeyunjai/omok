@@ -172,6 +172,7 @@ select {
 
 /* 난이도 드롭다운 */
 .diff-select {
+  min-height: 44px;
   background: var(--surface-2);
   color: var(--text);
   border: 1.5px solid var(--board-cell-gap);
@@ -189,6 +190,7 @@ select {
 
 /* 헤더 버튼 */
 .btn-primary {
+  min-height: 44px;
   background: var(--primary);
   color: #fff;
   font-size: .82rem;
@@ -200,6 +202,7 @@ select {
 }
 
 .btn-ghost {
+  min-height: 44px;
   background: transparent;
   color: var(--text-2);
   font-size: .82rem;
@@ -302,6 +305,7 @@ select {
 }
 
 .cell {
+  touch-action: manipulation;
   background: var(--cell-bg);
   display: flex;
   align-items: center;
