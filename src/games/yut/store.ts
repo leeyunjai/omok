@@ -295,13 +295,18 @@ export const useYut = create<State>()((set, get) => {
       }
 
       if (res.extraTurn) {
-        /* 잡으면 한 번 더 던진다 */
+        /* 잡으면 한 번 더 던진다.
+           아직 쓰지 않은 결과는 그대로 남는다 — 여기서 pending을 비우면
+           모가 나와 한 번 더 던져 잡았을 때 그 모가 사라진다. */
+        const left = res.state.pending.map((t) => THROW_LABEL[t]).join(' + ');
         set({
-          game: { ...res.state, pending: [] },
+          game: res.state,
           phase: 'throwing',
           bonus: true,
           selected: null,
-          message: `${who} 잡았습니다 — 한 번 더 던지세요`,
+          message: left
+            ? `${who} 잡았습니다 — 한 번 더 던지세요 (남은 결과 ${left})`
+            : `${who} 잡았습니다 — 한 번 더 던지세요`,
         });
         persist();
         if (!isMyTurn()) scheduleAi();
