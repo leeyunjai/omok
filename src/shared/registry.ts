@@ -120,6 +120,22 @@ export const GAMES: GameMeta[] = [
     tags: ['데일리', '낱말', '싱글'],
     accent: '#f0a63c',
   },
+  {
+    id: 'minesweeper',
+    title: '지뢰찾기',
+    subtitle: 'MINESWEEPER',
+    emoji: '💣',
+    desc: '추측 없이 논리로만 풀리는 판만 출제. 길게 눌러 깃발, 숫자를 눌러 한 번에 열기.',
+    controls: '탭 · 길게 누르기',
+    lore: [
+      '숫자는 거짓말을 하지 않는다.',
+      '모르는 건 판이 아니라 아직 읽지 않은 나다.',
+      '찍을 자리는 여기 없다.',
+    ],
+    category: '퍼즐',
+    tags: ['퍼즐', '싱글', '기록'],
+    accent: '#5aa0f0',
+  },
 ];
 
 export function gameById(id: string): GameMeta {

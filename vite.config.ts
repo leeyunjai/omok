@@ -105,6 +105,7 @@ export default defineConfig(({ mode }) => ({
         tetris: resolve(__dirname, 'games/tetris/index.html'),
         reversi: resolve(__dirname, 'games/reversi/index.html'),
         kkodle: resolve(__dirname, 'games/kkodle/index.html'),
+        minesweeper: resolve(__dirname, 'games/minesweeper/index.html'),
       },
     },
   },
