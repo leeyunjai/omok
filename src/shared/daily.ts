@@ -14,6 +14,21 @@ export function todayKey(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
+/**
+ * 시드 난수 (mulberry32).
+ * 같은 시드면 언제 어디서 돌려도 같은 수열이 나오므로,
+ * 서버 없이 "모두에게 같은 오늘의 문제"를 만들 수 있다.
+ */
+export function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /** 날짜 키를 32비트 정수 해시로 (FNV-1a) */
 export function hashDate(key: string, salt = ''): number {
   let h = 0x811c9dc5;
@@ -22,6 +37,11 @@ export function hashDate(key: string, salt = ''): number {
     h = Math.imul(h, 0x01000193) >>> 0;
   }
   return h >>> 0;
+}
+
+/** 오늘의 문제를 만들 때 쓸 난수 — 날짜와 게임 이름으로 시드를 만든다 */
+export function dailyRandom(gameId: string, dateKey = todayKey()): () => number {
+  return seededRandom(hashDate(dateKey, gameId));
 }
 
 /** 오늘의 문제 번호 — 같은 날이면 항상 같은 값 */

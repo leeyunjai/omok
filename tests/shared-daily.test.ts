@@ -42,3 +42,21 @@ describe('daily 유틸', () => {
     expect(todayKey(new Date(2026, 0, 1))).toBe('2026-01-01');
   });
 });
+
+describe('시드 난수', () => {
+  it('같은 시드는 같은 수열을 낸다', async () => {
+    const { seededRandom, dailyRandom } = await import('../src/shared/daily');
+    const a = seededRandom(12345);
+    const b = seededRandom(12345);
+    const seqA = Array.from({ length: 8 }, () => a());
+    const seqB = Array.from({ length: 8 }, () => b());
+    expect(seqA).toEqual(seqB);
+    expect(new Set(seqA).size).toBeGreaterThan(1);
+    expect(seqA.every((v) => v >= 0 && v < 1)).toBe(true);
+
+    /* 날짜가 다르면 다른 수열 */
+    const d1 = dailyRandom('x', '2026-09-08')();
+    const d2 = dailyRandom('x', '2026-09-09')();
+    expect(d1).not.toBe(d2);
+  });
+});

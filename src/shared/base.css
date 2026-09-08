@@ -289,3 +289,38 @@ kbd {
   .tut-close:hover { background: rgba(255, 255, 255, 0.08); color: #eef1f7; }
   .tut-start:hover { filter: brightness(1.08); }
 }
+
+/* ── 데일리 모드 전환 줄 (여러 게임 공용) ── */
+.daily-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.daily-modes { display: flex; gap: 4px; }
+.daily-modes button {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--g-border);
+  background: var(--g-surface);
+  color: var(--g-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.daily-modes button[aria-pressed='true'] {
+  background: var(--shell-accent);
+  border-color: var(--shell-accent);
+  color: #0b0d12;
+}
+.daily-streak {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 0.72rem;
+  color: var(--g-muted);
+  white-space: nowrap;
+}
+.daily-streak strong { color: var(--shell-accent); font-size: 0.86rem; }

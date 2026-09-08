@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { LEVELS, Level, Puzzle, generate, isSolved } from './engine';
 import { createStore } from '../../shared/storage';
+import { DailyRecord, dailyRandom, getDaily, recordDaily, todayKey, todayResult } from '../../shared/daily';
 import { setProgress, clearProgress } from '../../shared/progress';
 import { getBest, submitBest } from '../../shared/records';
 import { sfx } from '../../shared/sound';
@@ -13,26 +14,36 @@ const PREF_KEY = 'pref';
 export type Mark = 0 | 1 | -1;
 export type PaintMode = 'fill' | 'cross';
 export type Status = 'playing' | 'won';
+export type Mode = 'daily' | 'free';
+
+/** 오늘의 문제는 이 크기로 고정한다 */
+const DAILY_LEVEL: Level = 'normal';
 
 interface Saved {
   level: Level;
   solution: number[];
   marks: number[];
   elapsedMs: number;
+  mode?: Mode;
+  date?: string;
 }
 
 interface State {
+  mode: Mode;
+  daily: DailyRecord;
+  doneToday: boolean;
   level: Level;
   puzzle: Puzzle;
   marks: Int8Array;
-  mode: PaintMode;
+  paintMode: PaintMode;
   status: Status;
   elapsedMs: number;
   version: number;
   undoStack: Int8Array[];
 
+  setMode: (mode: Mode) => void;
   setLevel: (level: Level) => void;
-  setMode: (mode: PaintMode) => void;
+  setPaintMode: (mode: PaintMode) => void;
   paint: (index: number, value: Mark) => void;
   beginStroke: () => void;
   undo: () => void;
@@ -73,6 +84,7 @@ export const useNonogram = create<State>()((set, get) => {
   const prefLevel = store.get<Level>(PREF_KEY, 'easy');
   const level: Level = LEVELS[prefLevel] ? prefLevel : 'easy';
   const saved = loadSaved();
+  const savedIsToday = saved?.mode === 'daily' && saved.date === todayKey();
 
   const puzzle = saved
     ? cluesFrom(Uint8Array.from(saved.solution), LEVELS[saved.level].size)
@@ -91,16 +103,23 @@ export const useNonogram = create<State>()((set, get) => {
       solution: Array.from(s.puzzle.solution),
       marks: Array.from(s.marks),
       elapsedMs: s.elapsedMs,
+      mode: s.mode,
+      date: todayKey(),
     } satisfies Saved);
     let filled = 0;
     for (const m of s.marks) if (m === 1) filled++;
     setProgress('nonogram', `${LEVELS[s.level].label} · ${filled}칸 칠함`);
   }
 
-  function start(next: Level) {
-    const p = generate(LEVELS[next]);
+  function start(next: Level, mode: Mode = 'free') {
+    /* 오늘의 문제는 날짜 시드로 만들어 누구에게나 같은 판이 나온다 */
+    const level = mode === 'daily' ? DAILY_LEVEL : next;
+    const p = mode === 'daily'
+      ? generate(LEVELS[level], dailyRandom('nonogram'))
+      : generate(LEVELS[level]);
     set({
-      level: next,
+      mode,
+      level,
       puzzle: p,
       marks: new Int8Array(p.size * p.size),
       status: 'playing',
@@ -108,23 +127,27 @@ export const useNonogram = create<State>()((set, get) => {
       version: get().version + 1,
       undoStack: [],
     });
-    store.set(PREF_KEY, next);
+    if (mode === 'free') store.set(PREF_KEY, level);
     persist();
   }
 
   return {
+    mode: savedIsToday ? 'daily' : 'free',
+    daily: getDaily('nonogram'),
+    doneToday: todayResult('nonogram') !== null,
     level: saved ? saved.level : level,
     puzzle,
     marks,
-    mode: 'fill',
+    paintMode: 'fill',
     status: 'playing',
     elapsedMs: saved ? saved.elapsedMs : 0,
     version: 0,
     undoStack: [],
 
-    setLevel: (next) => start(next),
-    newPuzzle: () => start(get().level),
-    setMode: (mode) => set({ mode }),
+    setMode: (mode) => start(mode === 'daily' ? DAILY_LEVEL : get().level, mode),
+    setLevel: (next) => start(next, 'free'),
+    newPuzzle: () => start(get().level, get().mode === 'daily' ? 'daily' : 'free'),
+    setPaintMode: (paintMode) => set({ paintMode }),
 
     beginStroke: () => {
       const s = get();
@@ -145,6 +168,10 @@ export const useNonogram = create<State>()((set, get) => {
         const label = `${LEVELS[s.level].label} ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
         submitBest('nonogram', s.level, s.elapsedMs, label, false);
         submitBest('nonogram', 'default', s.elapsedMs, label, false);
+        if (s.mode === 'daily') {
+          const rec = recordDaily('nonogram', { solved: true, tries: 1 });
+          set({ daily: rec, doneToday: true });
+        }
         store.remove(SAVE_KEY);
         clearProgress('nonogram');
       } else {

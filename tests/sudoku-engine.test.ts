@@ -168,3 +168,23 @@ describe("generator", () => {
     expect(unique.size).toBe(10);
   });
 });
+
+describe("시드를 준 퍼즐 생성", () => {
+  it("같은 시드는 같은 문제를 만든다", () => {
+    const seeded = (s: number) => {
+      let a = s >>> 0;
+      return () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+    const a = generatePuzzle("easy", seeded(42));
+    const b = generatePuzzle("easy", seeded(42));
+    expect(a.puzzle).toEqual(b.puzzle);
+    expect(a.solution).toEqual(b.solution);
+    const c = generatePuzzle("easy", seeded(43));
+    expect(c.puzzle).not.toEqual(a.puzzle);
+  });
+});

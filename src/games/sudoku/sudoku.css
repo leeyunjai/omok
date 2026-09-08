@@ -56,7 +56,7 @@
   --r-lg: 18px;
 
   /* Board sizing */
-  --board-size: min(92vw, 100dvh - 352px, 486px);
+  --board-size: min(92vw, 100dvh - 400px, 486px);
 }
 
 /* ═══════════════════════════════════════════
@@ -115,6 +115,7 @@ select {
   margin-inline: auto;
   padding-inline: 12px;
 }
+#app > .daily-bar { padding-inline: 12px; }
 #app > .app-header-nav {
   display: flex;
   gap: 8px;
@@ -663,7 +664,7 @@ select {
 
 /* 작은 높이 화면 (가로 모드) */
 @media (max-height: 600px) {
-  :root { --board-size: min(88vw, 100dvh - 380px); }
+  :root { --board-size: min(88vw, 100dvh - 424px); }
   #app { gap: 8px; padding-bottom: 12px; }
 }
 

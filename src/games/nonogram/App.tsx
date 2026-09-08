@@ -4,6 +4,7 @@ import { useKeys } from '../../shared/react/useKeys';
 import { gameById } from '../../shared/registry';
 import { nonogramTutorial } from './tutorial';
 import { LEVELS, Mark, bestFor, useNonogram } from './store';
+import { DailyToggle } from '../../shared/react/DailyToggle';
 import { Level, lineDone } from './engine';
 
 const meta = gameById('nonogram');
@@ -18,12 +19,16 @@ export default function App() {
   const level = useNonogram((s) => s.level);
   const puzzle = useNonogram((s) => s.puzzle);
   const mode = useNonogram((s) => s.mode);
+  const paintMode = useNonogram((s) => s.paintMode);
+  const daily = useNonogram((s) => s.daily);
+  const doneToday = useNonogram((s) => s.doneToday);
   const status = useNonogram((s) => s.status);
   const elapsedMs = useNonogram((s) => s.elapsedMs);
   const version = useNonogram((s) => s.version);
   const undoDepth = useNonogram((s) => s.undoStack.length);
   const setLevel = useNonogram((s) => s.setLevel);
   const setMode = useNonogram((s) => s.setMode);
+  const setPaintMode = useNonogram((s) => s.setPaintMode);
   const paint = useNonogram((s) => s.paint);
   const beginStroke = useNonogram((s) => s.beginStroke);
   const undo = useNonogram((s) => s.undo);
@@ -53,7 +58,7 @@ export default function App() {
   }, [status]);
 
   useKeys({
-    f: () => setMode(mode === 'fill' ? 'cross' : 'fill'),
+    f: () => setPaintMode(paintMode === 'fill' ? 'cross' : 'fill'),
     z: () => undo(),
     n: () => newPuzzle(),
   });
@@ -71,7 +76,7 @@ export default function App() {
     if (status !== 'playing') return;
     (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
     const cur = marks[i];
-    const want: Mark = mode === 'fill' ? 1 : -1;
+    const want: Mark = paintMode === 'fill' ? 1 : -1;
     const value: Mark = cur === want ? 0 : want;
     stroke.current = { value, active: true };
     beginStroke();
@@ -141,6 +146,15 @@ export default function App() {
             `clamp(14px, min((100dvh - 300px) / ${size + maxColClue}, (100vw - 34px) / ${size + maxRowClue * 0.7}), 34px)`,
         }}
       >
+        <DailyToggle
+          mode={mode}
+          onChange={setMode}
+          record={daily}
+          doneToday={doneToday}
+          freeInfo={<span>{LEVELS[level].label} {LEVELS[level].size}×{LEVELS[level].size}</span>}
+        />
+
+        {mode === 'free' && (
         <div className="ng-levels">
           {LEVEL_KEYS.map((k) => (
             <button key={k} aria-pressed={level === k} onClick={() => setLevel(k)}>
@@ -149,10 +163,13 @@ export default function App() {
             </button>
           ))}
         </div>
+        )}
 
         <div className="ng-stats">
           <span>⏱ <strong>{formatTime(elapsedMs)}</strong></span>
-          <span className="ng-right">{best ? `최고 ${best.label.split(' ').pop()}` : '기록 없음'}</span>
+          <span className="ng-right">
+            {mode === 'daily' ? '오늘의 문제' : best ? `최고 ${best.label.split(' ').pop()}` : '기록 없음'}
+          </span>
         </div>
 
         <div className="ng-board-wrap">
@@ -173,8 +190,8 @@ export default function App() {
         </div>
 
         <div className="ng-controls">
-          <button aria-pressed={mode === 'fill'} onClick={() => setMode('fill')}>■ 칠하기</button>
-          <button aria-pressed={mode === 'cross'} onClick={() => setMode('cross')}>✕ 표시</button>
+          <button aria-pressed={paintMode === 'fill'} onClick={() => setPaintMode('fill')}>■ 칠하기</button>
+          <button aria-pressed={paintMode === 'cross'} onClick={() => setPaintMode('cross')}>✕ 표시</button>
           <button onClick={undo} disabled={undoDepth === 0}>↩ 되돌리기</button>
           <button onClick={clearMarks}>지우기</button>
         </div>
@@ -183,7 +200,7 @@ export default function App() {
           <div className="ng-result fade-in" role="dialog" aria-modal="true" aria-label="결과">
             <div className="ng-result-box pop-in">
               <div style={{ fontSize: '2.2rem' }}>🖼️</div>
-              <h2>그림을 찾았어요</h2>
+              <h2>{mode === 'daily' ? '오늘의 문제 완료' : '그림을 찾았어요'}</h2>
               <p>
                 {LEVELS[level].label} · {formatTime(elapsedMs)}
                 {best ? <><br />최고 기록 {best.label.split(' ').pop()}</> : null}

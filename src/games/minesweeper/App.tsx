@@ -4,6 +4,7 @@ import { useKeys } from '../../shared/react/useKeys';
 import { gameById } from '../../shared/registry';
 import { minesweeperTutorial } from './tutorial';
 import { LEVELS, bestFor, useMinesweeper } from './store';
+import { DailyToggle } from '../../shared/react/DailyToggle';
 import { Level } from './engine';
 
 const meta = gameById('minesweeper');
@@ -16,6 +17,9 @@ function formatTime(ms: number) {
 }
 
 export default function App() {
+  const mode = useMinesweeper((s) => s.mode);
+  const daily = useMinesweeper((s) => s.daily);
+  const doneToday = useMinesweeper((s) => s.doneToday);
   const level = useMinesweeper((s) => s.level);
   const layout = useMinesweeper((s) => s.layout);
   const status = useMinesweeper((s) => s.status);
@@ -24,6 +28,7 @@ export default function App() {
   const elapsedMs = useMinesweeper((s) => s.elapsedMs);
   const version = useMinesweeper((s) => s.version);
   const hasSave = useMinesweeper((s) => s.hasSave);
+  const setMode = useMinesweeper((s) => s.setMode);
   const setLevel = useMinesweeper((s) => s.setLevel);
   const setFlagMode = useMinesweeper((s) => s.setFlagMode);
   const reveal = useMinesweeper((s) => s.reveal);
@@ -144,6 +149,15 @@ export default function App() {
             `clamp(18px, min((100dvh - 300px) / ${spec.rows}, (100vw - 40px) / ${spec.cols}), 44px)`,
         }}
       >
+        <DailyToggle
+          mode={mode}
+          onChange={setMode}
+          record={daily}
+          doneToday={doneToday}
+          freeInfo={<span>{LEVELS[level].label} {LEVELS[level].cols}×{LEVELS[level].rows}</span>}
+        />
+
+        {mode === 'free' && (
         <div className="ms-levels">
           {LEVEL_KEYS.map((k) => (
             <button key={k} aria-pressed={level === k} onClick={() => setLevel(k)}>
@@ -152,12 +166,13 @@ export default function App() {
             </button>
           ))}
         </div>
+        )}
 
         <div className="ms-stats">
           <span className="ms-stat">🚩 <strong>{minesLeft}</strong></span>
           <span className="ms-stat">⏱ <strong>{formatTime(elapsedMs)}</strong></span>
           <span className="ms-right">
-            {best ? `최고 ${best.label.split(' ').pop()}` : '기록 없음'}
+            {mode === 'daily' ? '오늘의 판' : best ? `최고 ${best.label.split(' ').pop()}` : '기록 없음'}
             {layout && !layout.noGuess ? ' · 추측 필요할 수 있음' : ''}
           </span>
         </div>
@@ -191,10 +206,12 @@ export default function App() {
               <div style={{ fontSize: '2.2rem' }}>{status === 'won' ? '🎉' : '💥'}</div>
               <h2>{status === 'won' ? '전부 찾았어요' : '지뢰를 밟았어요'}</h2>
               <p>
-                {LEVELS[level].label} · {formatTime(elapsedMs)}
+                {mode === 'daily' ? '오늘의 판' : LEVELS[level].label} · {formatTime(elapsedMs)}
                 {status === 'won' && best ? <><br />최고 기록 {best.label.split(' ').pop()}</> : null}
               </p>
-              <button className="ms-btn" onClick={() => { restart(); setShowResult(false); }}>새 판</button>
+              <button className="ms-btn" onClick={() => { restart(); setShowResult(false); }}>
+                {mode === 'daily' ? '오늘의 판 다시' : '새 판'}
+              </button>
               <button className="ms-btn ghost" onClick={() => setShowResult(false)}>판 보기</button>
             </div>
           </div>

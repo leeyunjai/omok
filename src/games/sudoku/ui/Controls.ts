@@ -6,6 +6,7 @@ export class Controls {
   onReset: () => void = () => {};
 
   private diffSelect: HTMLSelectElement;
+  private newGameBtn: HTMLButtonElement;
 
   constructor(container: HTMLElement) {
     this.diffSelect = document.createElement("select");
@@ -30,6 +31,7 @@ export class Controls {
     newGameBtn.addEventListener("click", () => {
       this.onNewGame(this.diffSelect.value as Difficulty);
     });
+    this.newGameBtn = newGameBtn;
 
     const resetBtn = document.createElement("button");
     resetBtn.className = "btn-ghost";
@@ -38,6 +40,12 @@ export class Controls {
     resetBtn.addEventListener("click", () => this.onReset());
 
     container.append(this.diffSelect, newGameBtn, resetBtn);
+  }
+
+  /** 오늘의 문제에서는 난이도 선택과 새 게임을 감춘다 */
+  setHidden(hidden: boolean): void {
+    this.diffSelect.hidden = hidden;
+    this.newGameBtn.hidden = hidden;
   }
 
   setDifficulty(d: Difficulty): void {

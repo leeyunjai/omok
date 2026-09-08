@@ -14,16 +14,20 @@ export function secureRandomInt(n: number): number {
   return val % n;
 }
 
-/** Fisher-Yates 셔플 (in-place). secureRandomInt 사용. */
-export function shuffle<T>(arr: T[]): T[] {
+/**
+ * Fisher-Yates 셔플 (in-place).
+ * rand를 주면 그 난수를 쓰고(=시드 고정 가능), 없으면 보안 난수를 쓴다.
+ */
+export function shuffle<T>(arr: T[], rand?: () => number): T[] {
+  const pick = rand ? (n: number) => Math.floor(rand() * n) : secureRandomInt;
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = secureRandomInt(i + 1);
+    const j = pick(i + 1);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
 
 /** 0..n-1 배열을 셔플해 반환. */
-export function shuffledIndices(n: number): number[] {
-  return shuffle(Array.from({ length: n }, (_, i) => i));
+export function shuffledIndices(n: number, rand?: () => number): number[] {
+  return shuffle(Array.from({ length: n }, (_, i) => i), rand);
 }

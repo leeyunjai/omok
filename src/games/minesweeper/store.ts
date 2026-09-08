@@ -3,6 +3,7 @@ import {
   LEVELS, Layout, Level, chordTargets, floodReveal, generate, isCleared, neighbors,
 } from './engine';
 import { createStore } from '../../shared/storage';
+import { DailyRecord, dailyRandom, getDaily, recordDaily, todayResult } from '../../shared/daily';
 import { setProgress, clearProgress } from '../../shared/progress';
 import { submitBest, getBest } from '../../shared/records';
 import { sfx } from '../../shared/sound';
@@ -12,6 +13,10 @@ const SAVE_KEY = 'game';
 const PREF_KEY = 'pref';
 
 export type Status = 'ready' | 'playing' | 'won' | 'lost';
+export type Mode = 'daily' | 'free';
+
+/** 오늘의 판은 이 난이도로 고정하고, 가운데 칸을 열어 둔 채 시작한다 */
+const DAILY_LEVEL: Level = 'normal';
 
 interface Saved {
   level: Level;
@@ -22,6 +27,9 @@ interface Saved {
 }
 
 interface State {
+  mode: Mode;
+  daily: DailyRecord;
+  doneToday: boolean;
   level: Level;
   layout: Layout | null;
   revealed: Uint8Array;
@@ -34,6 +42,7 @@ interface State {
   version: number;
   hasSave: boolean;
 
+  setMode: (mode: Mode) => void;
   setLevel: (level: Level) => void;
   setFlagMode: (on: boolean) => void;
   reveal: (i: number) => void;
@@ -76,6 +85,7 @@ export const useMinesweeper = create<State>()((set, get) => {
 
   function persist() {
     const s = get();
+    if (s.mode === 'daily') return;
     if (!s.layout || s.status !== 'playing') {
       store.remove(SAVE_KEY);
       clearProgress('minesweeper');
@@ -95,6 +105,11 @@ export const useMinesweeper = create<State>()((set, get) => {
 
   function finish(won: boolean) {
     const s = get();
+    if (s.mode === 'daily') {
+      /* 오늘 결과는 처음 한 번만 기록된다 */
+      const rec = recordDaily('minesweeper', { solved: won, tries: 1 });
+      set({ daily: rec, doneToday: true });
+    }
     if (won) {
       sfx.win();
       const seconds = Math.floor(s.elapsedMs / 1000);
@@ -108,7 +123,31 @@ export const useMinesweeper = create<State>()((set, get) => {
     clearProgress('minesweeper');
   }
 
+  /** 날짜 시드로 만든 오늘의 판 — 가운데 칸을 미리 열어 모두에게 같은 시작을 준다 */
+  function startDaily() {
+    const spec = LEVELS[DAILY_LEVEL];
+    const start = Math.floor((spec.rows / 2)) * spec.cols + Math.floor(spec.cols / 2);
+    const layout = generate(spec, start, dailyRandom('minesweeper'));
+    const { revealed, flagged } = emptyArrays(DAILY_LEVEL);
+    floodReveal(layout, revealed, flagged, start);
+    set({
+      mode: 'daily',
+      level: DAILY_LEVEL,
+      layout,
+      revealed,
+      flagged,
+      status: 'playing',
+      exploded: -1,
+      elapsedMs: 0,
+      version: get().version + 1,
+      hasSave: false,
+    });
+  }
+
   return {
+    mode: 'free',
+    daily: getDaily('minesweeper'),
+    doneToday: todayResult('minesweeper') !== null,
     level,
     layout: null,
     ...emptyArrays(level),
@@ -127,6 +166,7 @@ export const useMinesweeper = create<State>()((set, get) => {
 
     setLevel: (next) => {
       store.set(PREF_KEY, next);
+      set({ mode: 'free' });
       store.remove(SAVE_KEY);
       clearProgress('minesweeper');
       set({
@@ -143,10 +183,25 @@ export const useMinesweeper = create<State>()((set, get) => {
 
     setFlagMode: (on) => set({ flagMode: on }),
 
+    setMode: (mode) => {
+      store.remove(SAVE_KEY);
+      clearProgress('minesweeper');
+      if (mode === 'free') {
+        const level = get().level === DAILY_LEVEL ? get().level : get().level;
+        set({
+          mode, level, layout: null, ...emptyArrays(level), status: 'ready',
+          exploded: -1, elapsedMs: 0, version: get().version + 1, hasSave: false,
+        });
+        return;
+      }
+      startDaily();
+    },
+
     restart: () => {
       const s = get();
       store.remove(SAVE_KEY);
       clearProgress('minesweeper');
+      if (s.mode === 'daily') { startDaily(); return; }
       set({
         layout: null,
         ...emptyArrays(s.level),

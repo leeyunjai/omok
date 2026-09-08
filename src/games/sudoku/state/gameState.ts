@@ -42,6 +42,10 @@ export interface GameState {
   createdAt: number;
   past: CellDiff[][];
   future: CellDiff[][];
+  /** 오늘의 문제로 시작한 판인지 */
+  daily?: boolean;
+  /** 오늘의 문제 날짜 (YYYY-MM-DD) */
+  dailyDate?: string;
 }
 
 const BASE_SCORE: Record<Difficulty, number> = {
@@ -61,7 +65,8 @@ export function calcScore(state: GameState): number {
 export function createInitialState(
   difficulty: Difficulty,
   puzzle: number[],
-  solution: number[]
+  solution: number[],
+  daily?: { date: string }
 ): GameState {
   const now = Date.now();
   const board: Cell[] = puzzle.map((v) => ({
@@ -89,6 +94,8 @@ export function createInitialState(
     createdAt: now,
     past: [],
     future: [],
+    daily: daily ? true : undefined,
+    dailyDate: daily?.date,
   };
 }
 
