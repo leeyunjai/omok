@@ -37,7 +37,7 @@ export function GameShell({ meta, tutorial, actions, children }: Props) {
   const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
-    document.title = `${meta.title} · games`;
+    document.title = `${meta.title} · 딴짓`;
     if (tutorial && !hasSeenTutorial(meta.id)) setHelpOpen(true);
   }, [meta.id, meta.title, tutorial]);
 

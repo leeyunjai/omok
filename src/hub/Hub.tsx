@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { GAMES, GameMeta, gameHref } from '../shared/registry';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { CATEGORIES, Category, GAMES, GameMeta, gameHref } from '../shared/registry';
 import { getProgress } from '../shared/progress';
 import { getPrimaryBest } from '../shared/records';
 import { formatStats, getStats } from '../shared/stats';
@@ -69,13 +69,22 @@ function GameCard({ meta, index }: { meta: GameMeta; index: number }) {
 }
 
 export function Hub() {
-  /* 숫자키로 바로 진입 */
+  const [filter, setFilter] = useState<Category | '전체'>('전체');
+
+  const visible = useMemo(
+    () => (filter === '전체' ? GAMES : GAMES.filter((g) => g.category === filter)),
+    [filter]
+  );
+
+  /* 숫자키로 바로 진입 — 지금 화면에 보이는 순서 기준 */
   const onKey = useCallback((e: KeyboardEvent) => {
+    const t = e.target as HTMLElement | null;
+    if (t && ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) return;
     const n = parseInt(e.key, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= GAMES.length) {
-      window.location.href = gameHref(GAMES[n - 1].id);
+    if (!Number.isNaN(n) && n >= 1 && n <= visible.length) {
+      window.location.href = gameHref(visible[n - 1].id);
     }
-  }, []);
+  }, [visible]);
 
   useEffect(() => {
     window.addEventListener('keydown', onKey);
@@ -99,9 +108,9 @@ export function Hub() {
     <div className="hub">
       <header className="hub-header">
         <div className="hub-brand">
-          <h1>games<span>.</span></h1>
+          <h1>딴짓<span>.</span></h1>
           <p>
-            설치도 서버도 없이 브라우저에서 바로 도는 게임 다섯 개.<br />
+            설치도 서버도 없이 브라우저에서 바로 도는 게임 {GAMES.length}개.<br />
             진행 상황과 기록은 이 기기에만 저장됩니다.
           </p>
         </div>
@@ -110,12 +119,29 @@ export function Hub() {
         </div>
       </header>
 
+      <nav className="hub-filter" aria-label="게임 분류">
+        {(['전체', ...CATEGORIES] as const).map((c) => {
+          const count = c === '전체' ? GAMES.length : GAMES.filter((g) => g.category === c).length;
+          if (count === 0) return null;
+          return (
+            <button
+              key={c}
+              className="filter-chip"
+              aria-pressed={filter === c}
+              onClick={() => setFilter(c)}
+            >
+              {c} <span className="filter-count">{count}</span>
+            </button>
+          );
+        })}
+      </nav>
+
       <main className="hub-grid">
-        {GAMES.map((meta, i) => <GameCard key={meta.id} meta={meta} index={i} />)}
+        {visible.map((meta, i) => <GameCard key={meta.id} meta={meta} index={i} />)}
       </main>
 
       <footer className="hub-footer">
-        <span>숫자키 1~{GAMES.length} 로 바로 실행 · 100% 오프라인 · 저장은 localStorage</span>
+        <span>숫자키로 바로 실행 · 100% 오프라인 · 저장은 localStorage</span>
         <button className="hub-reset" onClick={resetAll}>기록 전체 삭제</button>
       </footer>
     </div>

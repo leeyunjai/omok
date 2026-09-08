@@ -104,6 +104,7 @@ export default defineConfig(({ mode }) => ({
         sudoku: resolve(__dirname, 'games/sudoku/index.html'),
         tetris: resolve(__dirname, 'games/tetris/index.html'),
         reversi: resolve(__dirname, 'games/reversi/index.html'),
+        kkodle: resolve(__dirname, 'games/kkodle/index.html'),
       },
     },
   },

@@ -6,7 +6,7 @@ import { getPrefs, setPrefs } from '../prefs';
  * GameShell.tsx와 같은 마크업/클래스를 사용한다.
  */
 export function mountShellBar(meta: GameMeta, extraActions: HTMLElement[] = []): HTMLElement {
-  document.title = `${meta.title} · games`;
+  document.title = `${meta.title} · 딴짓`;
 
   const bar = document.createElement('header');
   bar.className = 'shell-bar';

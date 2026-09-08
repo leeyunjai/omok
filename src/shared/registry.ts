@@ -1,3 +1,8 @@
+/** 허브 필터용 분류 */
+export type Category = '보드' | '퍼즐' | '액션' | '데일리';
+
+export const CATEGORIES: Category[] = ['보드', '퍼즐', '액션', '데일리'];
+
 /** 허브와 각 게임이 함께 쓰는 게임 목록(메타데이터) */
 export interface GameMeta {
   id: string;
@@ -11,6 +16,8 @@ export interface GameMeta {
   controls: string;
   /** 게임을 소개하는 짧은 서사 (2~3줄) */
   lore: string[];
+  /** 허브 필터에 쓰는 큰 분류 */
+  category: Category;
   tags: string[];
   /** 카드/헤더 강조색 (CSS 색상) */
   accent: string;
@@ -24,6 +31,7 @@ export const GAMES: GameMeta[] = [
     emoji: '⚫',
     desc: '15×15 바둑판에서 다섯 개를 먼저 잇는 쪽이 승리. 3단계 AI와 2인 대국.',
     controls: '클릭 · 방향키 + Enter',
+    category: '보드',
     tags: ['보드', 'AI 대전', '2인'],
     accent: '#d9a43c',
     lore: [
@@ -39,6 +47,7 @@ export const GAMES: GameMeta[] = [
     emoji: '🀄',
     desc: '차림 선택과 점수제를 갖춘 한국 장기. 궁·차·포·마·상 전부 구현.',
     controls: '클릭 · 방향키 + Enter',
+    category: '보드',
     tags: ['보드', 'AI 대전', '2인'],
     accent: '#e05a4a',
     lore: [
@@ -54,6 +63,7 @@ export const GAMES: GameMeta[] = [
     emoji: '🔢',
     desc: '유일해가 보장된 퍼즐 생성기, 메모·되돌리기·힌트·기록까지.',
     controls: '숫자키 · 방향키',
+    category: '퍼즐',
     tags: ['퍼즐', '싱글'],
     accent: '#4361ee',
     lore: [
@@ -69,6 +79,7 @@ export const GAMES: GameMeta[] = [
     emoji: '🧱',
     desc: 'SRS 회전과 월킥, 7-bag, 홀드, 고스트, T-스핀과 백투백 보너스까지.',
     controls: '방향키 · Space · Shift',
+    category: '액션',
     tags: ['액션', '싱글', '점수'],
     accent: '#22c1a4',
     lore: [
@@ -84,6 +95,7 @@ export const GAMES: GameMeta[] = [
     emoji: '⚪',
     desc: '착수 가능 위치 표시와 종반 완전탐색을 갖춘 8×8 오델로.',
     controls: '클릭 · 방향키 + Enter',
+    category: '보드',
     tags: ['보드', 'AI 대전', '2인'],
     accent: '#7048e8',
     lore: [
@@ -91,6 +103,22 @@ export const GAMES: GameMeta[] = [
       '많이 가진 쪽이 곧 잃을 자리가 많은 쪽이다.',
       '마지막 한 수까지 판은 누구의 것도 아니다.',
     ],
+  },
+  {
+    id: 'kkodle',
+    title: '꼬들',
+    subtitle: 'KKODLE · 한글 낱말',
+    emoji: '🔤',
+    desc: '두 글자 낱말을 여덟 번 안에. 하루 한 문제와 무한 모드, 연속 일수 기록.',
+    controls: '화면 자판 · 두벌식 키보드',
+    lore: [
+      '낱말 하나를 두고 여덟 번의 기회.',
+      '틀린 글자도 남긴다 — 어디에 없는지를.',
+      '지워 나가다 보면 남는 건 하나뿐이다.',
+    ],
+    category: '데일리',
+    tags: ['데일리', '낱말', '싱글'],
+    accent: '#f0a63c',
   },
 ];
 
