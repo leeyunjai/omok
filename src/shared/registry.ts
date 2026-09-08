@@ -168,6 +168,22 @@ export const GAMES: GameMeta[] = [
     tags: ['카드', '싱글', '기록'],
     accent: '#10a37f',
   },
+  {
+    id: 'g2048',
+    title: '2048',
+    subtitle: '2048 · 숫자 합치기',
+    emoji: '🧮',
+    desc: '같은 수를 붙여 2048까지. 되돌리기와 최고 타일 기록, 달성 후 계속하기.',
+    controls: '쓸어넘기기 · 방향키',
+    lore: [
+      '같은 것끼리만 하나가 된다.',
+      '한 칸을 비우려면 두 칸을 붙여야 한다.',
+      '구석을 지키는 쪽이 오래 남는다.',
+    ],
+    category: '액션',
+    tags: ['액션', '싱글', '점수'],
+    accent: '#edc22e',
+  },
 ];
 
 export function gameById(id: string): GameMeta {
