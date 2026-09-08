@@ -40,8 +40,8 @@ function PieceCircle({ piece, x, y, selected }: {
   const isHan = piece.player === 'han';
   const gradId = isHan ? 'hanFaceGrad' : 'choFaceGrad';
   const rimId = isHan ? 'hanRimGrad' : 'choRimGrad';
-  const stroke = isHan ? '#0e2552' : '#52100e';
-  const textFill = isHan ? '#09183a' : '#3a0909';
+  const stroke = isHan ? '#52100e' : '#0b3b22';
+  const textFill = isHan ? '#3a0909' : '#06301b';
   const char = CHARS[piece.type]?.[piece.player] ?? '?';
   const R = 21;
 
@@ -191,27 +191,28 @@ export function Board() {
         onKeyDown={handleKeyDown}
       >
         <defs>
+          {/* 한(漢)은 붉은 말, 초(楚)는 푸른 말 — 장기판의 오랜 약속이다 */}
           <radialGradient id="hanFaceGrad" cx="38%" cy="30%" r="68%">
-            <stop offset="0%" stopColor="#eef6ff" />
-            <stop offset="30%" stopColor="#cde0ff" />
-            <stop offset="70%" stopColor="#84aee8" />
-            <stop offset="100%" stopColor="#3a66b8" />
-          </radialGradient>
-          <radialGradient id="hanRimGrad" cx="38%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#b8d0f8" />
-            <stop offset="55%" stopColor="#5880c8" />
-            <stop offset="100%" stopColor="#1a3060" />
-          </radialGradient>
-          <radialGradient id="choFaceGrad" cx="38%" cy="30%" r="68%">
             <stop offset="0%" stopColor="#fff2f0" />
             <stop offset="30%" stopColor="#ffcccc" />
             <stop offset="70%" stopColor="#e87878" />
             <stop offset="100%" stopColor="#b83030" />
           </radialGradient>
-          <radialGradient id="choRimGrad" cx="38%" cy="30%" r="70%">
+          <radialGradient id="hanRimGrad" cx="38%" cy="30%" r="70%">
             <stop offset="0%" stopColor="#f8b8b8" />
             <stop offset="55%" stopColor="#c85858" />
             <stop offset="100%" stopColor="#601818" />
+          </radialGradient>
+          <radialGradient id="choFaceGrad" cx="38%" cy="30%" r="68%">
+            <stop offset="0%" stopColor="#eefff5" />
+            <stop offset="30%" stopColor="#c6efd6" />
+            <stop offset="70%" stopColor="#69b98a" />
+            <stop offset="100%" stopColor="#1f7a4a" />
+          </radialGradient>
+          <radialGradient id="choRimGrad" cx="38%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#b6e5c9" />
+            <stop offset="55%" stopColor="#469f6b" />
+            <stop offset="100%" stopColor="#10502f" />
           </radialGradient>
           <linearGradient id="surfaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#f2d258" />
@@ -286,15 +287,20 @@ export function Board() {
           </g>
         )}
 
-        {/* 이동 가능 위치 */}
+        {/* 이동 가능 위치 — 편 색(붉은 한 · 푸른 초)과 헷갈리지 않게 흰색으로 */}
         {validMoves.map(({ row, col }) =>
           board[row][col] ? (
-            <circle key={`cap-${row}-${col}`} cx={X(col)} cy={Y(row)} r={24}
-              fill="rgba(220,50,30,0.15)" stroke="rgba(220,60,40,0.85)" strokeWidth={2.4}
-              style={{ pointerEvents: 'none' }} />
+            <g key={`cap-${row}-${col}`} style={{ pointerEvents: 'none' }}>
+              <circle cx={X(col)} cy={Y(row)} r={24}
+                fill="rgba(0,0,0,0.18)" stroke="rgba(0,0,0,0.55)" strokeWidth={4.5} />
+              <circle cx={X(col)} cy={Y(row)} r={24}
+                fill="none" stroke="#ffffff" strokeWidth={2.6} />
+            </g>
           ) : (
-            <circle key={`dot-${row}-${col}`} cx={X(col)} cy={Y(row)} r={7}
-              fill="#1a9e50" opacity={0.9} style={{ pointerEvents: 'none' }} />
+            <g key={`dot-${row}-${col}`} style={{ pointerEvents: 'none' }}>
+              <circle cx={X(col)} cy={Y(row)} r={8} fill="rgba(0,0,0,0.45)" />
+              <circle cx={X(col)} cy={Y(row)} r={6.5} fill="#f7f3e6" />
+            </g>
           )
         )}
 

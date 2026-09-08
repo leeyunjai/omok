@@ -58,6 +58,13 @@ function build(): Record<string, NodePos> {
 }
 
 export const NODES = build();
+
+/** 판 바깥으로 조금 여유를 둔 그리기 영역 — 참먹이 밖의 '나기' 자리를 그린다 */
+export const PAD = 16;
+export const VIEW_BOX = `${-PAD} ${-PAD} ${VIEW + PAD * 2} ${VIEW + PAD * 2}`;
+
+/** 말이 판을 벗어나 나가는 자리. 참먹이(o19) 바깥쪽 대각선으로 뺀다 */
+export const EXIT = { x: NODES.o19.x + 27, y: NODES.o19.y + 27 };
 export const NODE_LIST = Object.values(NODES);
 
 /** 바깥 길 순서대로 이어 그리기 위한 좌표 목록 */

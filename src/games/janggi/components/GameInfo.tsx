@@ -18,8 +18,8 @@ const DIFF_LABEL: Record<string, string> = { easy: '쉬움', normal: '보통', h
 
 function SideLabel({ p }: { p: Player }) {
   return p === 'cho'
-    ? <span className="text-red-400 font-bold">초 楚</span>
-    : <span className="text-blue-400 font-bold">한 漢</span>;
+    ? <span className="text-green-400 font-bold">초 楚</span>
+    : <span className="text-red-400 font-bold">한 漢</span>;
 }
 
 function CaptureList({ types, by }: { types: PieceType[]; by: Player }) {
@@ -29,7 +29,7 @@ function CaptureList({ types, by }: { types: PieceType[]; by: Player }) {
   return (
     <span className="text-xs leading-none" style={{ fontFamily: 'serif' }}>
       {types.map((t, i) => (
-        <span key={i} className={owner === 'cho' ? 'text-red-300/90' : 'text-blue-300/90'}>
+        <span key={i} className={owner === 'cho' ? 'text-green-300/90' : 'text-red-300/90'}>
           {CHARS[t][owner]}
         </span>
       ))}
@@ -89,15 +89,15 @@ export function GameInfo() {
 
       {/* 점수 · 잡은 기물 */}
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-lg px-2 py-1.5" style={{ background: 'rgba(120,30,30,0.2)' }}>
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'rgba(24,90,58,0.22)' }}>
           <div className="flex justify-between items-center">
-            <span className="text-red-300 font-bold">초 {scoreCho.toFixed(1)}점</span>
+            <span className="text-green-300 font-bold">초 {scoreCho.toFixed(1)}점</span>
             <CaptureList types={caps.cho} by="cho" />
           </div>
         </div>
-        <div className="rounded-lg px-2 py-1.5" style={{ background: 'rgba(30,60,120,0.2)' }}>
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'rgba(120,30,30,0.2)' }}>
           <div className="flex justify-between items-center">
-            <span className="text-blue-300 font-bold">한 {scoreHan.toFixed(1)}점</span>
+            <span className="text-red-300 font-bold">한 {scoreHan.toFixed(1)}점</span>
             <CaptureList types={caps.han} by="han" />
           </div>
         </div>
@@ -109,7 +109,7 @@ export function GameInfo() {
           {recent.map((m, i) => (
             <span key={moves.length - i}>
               <span className="text-stone-500">{moves.length - i}.</span>{' '}
-              <span className={m.player === 'cho' ? 'text-red-300/80' : 'text-blue-300/80'}>
+              <span className={m.player === 'cho' ? 'text-green-300/80' : 'text-red-300/80'}>
                 {m.pass ? '한 수 쉼' : `${pieceName(m.type, m.player)} ${notate(m.from)}→${notate(m.to)}${m.captured ? `(${pieceName(m.captured, m.player === 'cho' ? 'han' : 'cho')} 잡음)` : ''}`}
               </span>
             </span>

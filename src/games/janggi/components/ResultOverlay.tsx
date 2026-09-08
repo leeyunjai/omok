@@ -32,7 +32,7 @@ export function ResultOverlay() {
       <div className="w-full max-w-xs rounded-2xl p-6 text-center pop-in"
         style={{ background: 'linear-gradient(160deg,#2b2018,#171008)', border: '1px solid rgba(217,164,60,0.35)', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}>
         <div className="text-4xl mb-2">{mode === 'vs-ai' ? (won ? '🏆' : '😤') : '🎉'}</div>
-        <h2 className={`text-xl font-bold mb-1 ${winner === 'cho' ? 'text-red-300' : 'text-blue-300'}`}
+        <h2 className={`text-xl font-bold mb-1 ${winner === 'cho' ? 'text-green-300' : 'text-red-300'}`}
           style={{ fontFamily: 'serif' }}>{title}</h2>
         <p className="text-amber-600 text-xs mb-5">{reason} · 총 {moves.length}수</p>
         <div className="space-y-2">

@@ -37,7 +37,7 @@ export function Menu() {
           aria-pressed={value === s}
           className={`flex-1 min-h-[44px] py-1.5 rounded-lg text-[11px] font-semibold transition-colors focus-ring ${
             value === s
-              ? (side === 'cho' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white')
+              ? (side === 'cho' ? 'bg-green-700 text-white' : 'bg-red-600 text-white')
               : 'bg-stone-700/70 text-amber-200 hover:bg-stone-600'
           }`}>
           {SETUP_LABEL[s]}
@@ -92,7 +92,7 @@ export function Menu() {
                 aria-pressed={playerSide === s.key}
                 className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors focus-ring ${
                   playerSide === s.key
-                    ? (s.key === 'cho' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white')
+                    ? (s.key === 'cho' ? 'bg-green-700 text-white' : 'bg-red-600 text-white')
                     : 'bg-stone-700/70 text-amber-200 hover:bg-stone-600'
                 }`}>
                 <span className="block" style={{ fontFamily: 'serif' }}>{s.label}</span>
@@ -106,11 +106,11 @@ export function Menu() {
           <p className="text-amber-300/90 text-xs font-semibold tracking-wider">차림 (마·상 배치)</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-red-400 text-[11px] w-6 shrink-0" style={{ fontFamily: 'serif' }}>초</span>
+              <span className="text-green-400 text-[11px] w-6 shrink-0" style={{ fontFamily: 'serif' }}>초</span>
               {setupRow('cho', setupCho)}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-blue-400 text-[11px] w-6 shrink-0" style={{ fontFamily: 'serif' }}>한</span>
+              <span className="text-red-400 text-[11px] w-6 shrink-0" style={{ fontFamily: 'serif' }}>한</span>
               {setupRow('han', setupHan)}
             </div>
           </div>

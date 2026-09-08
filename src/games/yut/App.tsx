@@ -4,9 +4,9 @@ import { useKeys } from '../../shared/react/useKeys';
 import { gameById } from '../../shared/registry';
 import { yutTutorial } from './tutorial';
 import { loadSavedGame, movesForPiece, useYut } from './store';
-import { NODES, OUTER_RING, VIEW } from './board';
+import { EXIT, NODES, OUTER_RING, VIEW, VIEW_BOX } from './board';
 import {
-  PIECES_PER_SIDE, Player, START, THROW_LABEL, Throw, legalMoves,
+  GOAL, PIECES_PER_SIDE, Player, START, THROW_LABEL, Throw, legalMoves,
 } from './engine';
 import { DIFFICULTY_LABEL, Difficulty } from './ai';
 
@@ -170,6 +170,8 @@ function Board() {
   }, [game, selected, moves.length]);
 
   const movablePieceIds = useMemo(() => new Set(moves.map((m) => m.pieceId)), [moves]);
+  /* 고른 말이 지금 날 수 있는가 */
+  const goalThrow = targets.get(GOAL);
 
   /* 칸마다 말 모아 두기 — 겹쳐 놓인 말의 수를 세고 누를 대상을 정한다 */
   const byNode = new Map<string, number[]>();
@@ -198,7 +200,7 @@ function Board() {
   const onBoard = game.pieces.filter((p) => !p.done && p.node !== START);
 
   return (
-    <svg className="yt-board" viewBox={`0 0 ${VIEW} ${VIEW}`} role="application" aria-label="윷판">
+    <svg className="yt-board" viewBox={VIEW_BOX} role="application" aria-label="윷판">
       <defs>
         <radialGradient id="ytBlue" cx="34%" cy="30%" r="70%">
           <stop offset="0%" stopColor="#bcd8ff" />
@@ -262,11 +264,28 @@ function Board() {
       })}
 
       {/* 방 이름 */}
-      <text x={NODES.o19.x - 32} y={NODES.o19.y - 17} textAnchor="middle" className="yt-label strong">참먹이</text>
-      <text x={NODES.o19.x - 32} y={NODES.o19.y - 7} textAnchor="middle" className="yt-label dim">출발 · 도착</text>
+      <text x={NODES.o19.x - 32} y={NODES.o19.y - 23} textAnchor="middle" className="yt-label strong">참먹이</text>
+      <text x={NODES.o19.x - 32} y={NODES.o19.y - 13} textAnchor="middle" className="yt-label dim">출발 · 도착</text>
       <text x={NODES.o4.x} y={NODES.o4.y - 19} textAnchor="middle" className="yt-label dim">지름길</text>
       <text x={NODES.o9.x} y={NODES.o9.y - 19} textAnchor="middle" className="yt-label dim">지름길</text>
       <text x={NODES.center.x} y={NODES.center.y + 29} textAnchor="middle" className="yt-label">방</text>
+
+      {/* 나기 — 판을 한 바퀴 돈 말이 빠져나가는 자리.
+          도착은 칸이 아니라서 판 위에 그릴 곳이 없었고, 그래서 낼 수가 없었다 */}
+      <g
+        className={`yt-exit${goalThrow !== undefined ? ' target' : ''}`}
+        onClick={() => onNode(GOAL)}
+        style={{ cursor: goalThrow !== undefined ? 'pointer' : 'default' }}
+      >
+        <line className="yt-exit-path" x1={NODES.o19.x} y1={NODES.o19.y} x2={EXIT.x} y2={EXIT.y} />
+        {goalThrow !== undefined && <circle className="yt-halo" cx={EXIT.x} cy={EXIT.y} r="21" />}
+        {/* 손가락으로 누를 자리는 넉넉하게 */}
+        <circle cx={EXIT.x} cy={EXIT.y} r="22" fill="transparent" />
+        <circle className="yt-exit-ring" cx={EXIT.x} cy={EXIT.y} r="14" />
+        <text x={EXIT.x} y={EXIT.y + 3.5} textAnchor="middle" className="yt-exit-label">
+          {goalThrow !== undefined ? THROW_LABEL[goalThrow] : '나기'}
+        </text>
+      </g>
 
       {/* 잡았을 때 · 났을 때 잠깐 보이는 표시 */}
       {fx && NODES[fx.node] && (

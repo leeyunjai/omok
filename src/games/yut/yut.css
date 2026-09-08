@@ -68,6 +68,23 @@
 .yt-halo { fill: rgba(52, 211, 153, 0.16); animation: ytPulse 1.4s ease-in-out infinite; pointer-events: none; }
 .yt-link { stroke: #6b4f38; stroke-width: 1.6; fill: none; }
 
+/* 나기 자리 — 참먹이 바깥 */
+.yt-exit-path {
+  stroke: #6b4f38;
+  stroke-width: 1.4;
+  stroke-dasharray: 3 3;
+}
+.yt-exit-ring {
+  fill: #2a1c12;
+  stroke: #8a6440;
+  stroke-width: 1.6;
+  transition: fill 0.15s, stroke 0.15s;
+}
+.yt-exit-label { fill: #a08a78; font-size: 8.5px; font-weight: 800; pointer-events: none; }
+.yt-exit.target .yt-exit-ring { fill: #175c43; stroke: #34d399; stroke-width: 2.6; }
+.yt-exit.target .yt-exit-label { fill: #7cf0c0; }
+.yt-exit.target .yt-exit-path { stroke: #34d399; }
+
 .yt-label { fill: #a08a78; font-size: 8.5px; font-weight: 700; pointer-events: none; }
 .yt-label.strong { fill: #e0b184; font-size: 9.5px; font-weight: 900; }
 .yt-label.dim { fill: #7d6959; font-size: 7.5px; font-weight: 600; }
