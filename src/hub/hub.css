@@ -87,8 +87,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px 18px 16px;
+  gap: 9px;
+  padding: 15px 16px 13px;
   border-radius: var(--g-radius-lg);
   background: var(--g-surface);
   border: 1px solid var(--g-border);
@@ -125,14 +125,16 @@
 
 .card-top { display: flex; align-items: center; gap: 12px; }
 .card-icon {
-  width: 46px; height: 46px;
+  width: 48px; height: 48px;
   display: grid; place-items: center;
   border-radius: 14px;
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--g-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
 }
+.card-icon svg { display: block; border-radius: 11px; }
 .card-heading { min-width: 0; }
 .card-heading h2 {
   margin: 0;
@@ -161,17 +163,24 @@
 .card-desc {
   margin: 0;
   font-size: 0.83rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: #c4ccdb;
-  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .card-lore {
   margin: 0;
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   font-style: italic;
-  line-height: 1.5;
+  line-height: 1.45;
   color: #8791a6;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
 }
 
 .card-tags { display: flex; flex-wrap: wrap; gap: 5px; }

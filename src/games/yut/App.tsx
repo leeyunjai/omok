@@ -86,7 +86,7 @@ function Menu() {
   const saved = loadSavedGame();
 
   return (
-    <div className="yt-menu">
+    <div className="yt-menu center-scroll">
       <div className="yt-menu-art" aria-hidden>
         <div className="yt-sticks">
           {[true, false, true, true].map((flat, i) => (

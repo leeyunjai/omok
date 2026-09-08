@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GameShell } from '../../shared/react/GameShell';
 import { gameById } from '../../shared/registry';
+import { shade, withAlpha } from '../../shared/color';
 import { submitBest, getBest } from '../../shared/records';
 import { tetrisTutorial } from './tutorial';
 import { TetrisGame, Hud } from './game';
@@ -15,15 +16,42 @@ const COLORS: Record<PieceKind, string> = {
   S: '#4ade80', Z: '#f87171', J: '#5b8dff', L: '#ffa14a',
 };
 
-const CELL_LIGHT = 'rgba(255,255,255,0.28)';
+/** 블록 하나 — 위가 밝고 아래가 어두운 사출 플라스틱처럼 그린다 */
+function drawCell(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, size: number, color: string,
+  opts: { alpha?: number; glow?: boolean } = {}
+) {
+  const { alpha = 1, glow = false } = opts;
+  const pad = Math.max(1, size * 0.055);
+  const r = Math.max(2, size * 0.18);
+  const w = size - pad * 2;
 
-function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string, alpha = 1) {
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = color;
-  ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
-  /* 위쪽에 살짝 밝은 면을 넣어 입체감을 준다 */
-  ctx.fillStyle = CELL_LIGHT;
-  ctx.fillRect(x + 1, y + 1, size - 2, Math.max(2, size * 0.16));
+  if (glow) { ctx.shadowColor = color; ctx.shadowBlur = size * 0.45; }
+
+  const g = ctx.createLinearGradient(x, y + pad, x, y + size - pad);
+  g.addColorStop(0, shade(color, 0.34));
+  g.addColorStop(0.52, color);
+  g.addColorStop(1, shade(color, -0.34));
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(x + pad, y + pad, w, w, r);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  /* 윗면 하이라이트 */
+  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  ctx.beginPath();
+  ctx.roundRect(x + pad + 1.5, y + pad + 1.5, Math.max(1, w - 3), Math.max(1.5, size * 0.15), r * 0.55);
+  ctx.fill();
+
+  /* 바깥선 */
+  ctx.strokeStyle = 'rgba(0,0,0,0.34)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x + pad + 0.5, y + pad + 0.5, w - 1, w - 1, r);
+  ctx.stroke();
   ctx.globalAlpha = 1;
 }
 
@@ -107,7 +135,10 @@ export default function App() {
       }
 
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#0c1118';
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#101a22');
+      bg.addColorStop(1, '#080d13');
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, w, h);
 
       /* 격자 */
@@ -139,10 +170,19 @@ export default function App() {
       if (game.ghost && game.status === 'playing') {
         for (const [x, y] of cellsOf(game.ghost)) {
           if (y < HIDDEN_ROWS) continue;
-          ctx.globalAlpha = 0.9;
+          const gx = x * cell;
+          const gy = (y - HIDDEN_ROWS) * cell;
+          const gr = Math.max(2, cell * 0.18);
+          ctx.fillStyle = withAlpha(COLORS[game.ghost.kind], 0.12);
+          ctx.beginPath();
+          ctx.roundRect(gx + 2, gy + 2, cell - 4, cell - 4, gr);
+          ctx.fill();
+          ctx.globalAlpha = 0.75;
           ctx.strokeStyle = COLORS[game.ghost.kind];
-          ctx.lineWidth = Math.max(1, cell * 0.08);
-          ctx.strokeRect(x * cell + 2, (y - HIDDEN_ROWS) * cell + 2, cell - 4, cell - 4);
+          ctx.lineWidth = Math.max(1, cell * 0.07);
+          ctx.beginPath();
+          ctx.roundRect(gx + 2, gy + 2, cell - 4, cell - 4, gr);
+          ctx.stroke();
           ctx.globalAlpha = 1;
         }
       }
@@ -151,7 +191,7 @@ export default function App() {
       if (game.active) {
         for (const [x, y] of cellsOf(game.active)) {
           if (y < HIDDEN_ROWS) continue;
-          drawCell(ctx, x * cell, (y - HIDDEN_ROWS) * cell, cell, COLORS[game.active.kind]);
+          drawCell(ctx, x * cell, (y - HIDDEN_ROWS) * cell, cell, COLORS[game.active.kind], { glow: true });
         }
       }
     };

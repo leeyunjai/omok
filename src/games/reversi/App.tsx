@@ -9,6 +9,9 @@ import { Difficulty, DIFFICULTY_LABEL } from './ai';
 
 const meta = gameById('reversi');
 
+/* 바둑판의 화점처럼 안쪽 네 귀에 점을 찍는다 */
+const STAR_CELLS = new Set([9, 13, 41, 45]);
+
 const DIFFS: { key: Difficulty; desc: string }[] = [
   { key: 'easy', desc: '1수' },
   { key: 'normal', desc: '3수' },
@@ -26,7 +29,7 @@ function Menu() {
   const saved = loadSavedGame();
 
   return (
-    <div className="rv-menu">
+    <div className="rv-menu center-scroll">
       <p className="rv-lore">
         {meta.lore.map((line, i) => <span key={i} style={{ display: 'block' }}>{line}</span>)}
       </p>
@@ -198,7 +201,15 @@ function Game() {
                 disabled={!myTurn || !legal.has(i)}
                 onClick={() => { setKeyboard(false); setCursor(i); play(i); }}
               >
-                {v !== 0 && <span className={`rv-disc ${v === BLACK ? 'black' : 'white'}`} />}
+                {STAR_CELLS.has(i) && <span className="rv-star" aria-hidden />}
+                {/* 빈 칸에도 두어야 뒤집힐 때 같은 요소가 돌아간다 */}
+                <span
+                  className={`rv-disc ${v === BLACK ? 'black' : v === WHITE ? 'white' : 'empty'}`}
+                  aria-hidden
+                >
+                  <span className="rv-face b" />
+                  <span className="rv-face w" />
+                </span>
               </button>
             );
           })}

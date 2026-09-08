@@ -25,7 +25,7 @@ export function Menu() {
   const saved = loadSavedGame();
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center gap-2 px-4 py-6"
+    <div className="center-scroll flex-1 min-h-0 overflow-y-auto flex flex-col items-center gap-2 px-4 py-6"
       style={{ background: 'radial-gradient(ellipse at 50% 0%,#2a1a08 0%,#140d04 60%,#0a0602 100%)', paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' }}>
       <div className="text-center mb-8">
         <h1 className="text-5xl sm:text-6xl font-bold text-amber-200 mb-1"

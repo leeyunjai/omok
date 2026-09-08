@@ -66,7 +66,9 @@
   gap: 2px;
   padding: 8px;
   border-radius: 14px;
-  background: #1f6a4a;
+  background:
+    radial-gradient(120% 90% at 30% 0%, rgba(255, 255, 255, 0.07), transparent 60%),
+    #1c6446;
   border: 1px solid rgba(0, 0, 0, 0.5);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
   touch-action: manipulation;
@@ -74,11 +76,24 @@
 .rv-cell {
   position: relative;
   border-radius: 3px;
-  background: #2a8a60;
+  background: linear-gradient(160deg, #2f9268, #26805a);
   display: grid;
   place-items: center;
   padding: 0;
   min-width: 0;
+  perspective: 420px;
+}
+/* 바둑판의 화점 */
+.rv-star {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2;
+  pointer-events: none;
 }
 .rv-cell:disabled { cursor: default; }
 .rv-cell.playable { background: #2f9b6c; }
@@ -98,18 +113,31 @@
   border: 2px solid rgba(255, 209, 102, 0.95);
 }
 
+/* 돌은 앞뒤 두 면을 가진 원반이다. 색이 바뀌면 그 자리에서 돌아간다.
+   opacity는 쓰지 않는다 — 3D 맥락이 평면으로 눌려 뒷면이 비친다. */
 .rv-disc {
+  position: relative;
   width: 84%;
   height: 84%;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
-  animation: rv-place 0.18s ease-out;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg) scale(1);
+  transition: transform 0.34s cubic-bezier(0.3, 0.9, 0.4, 1);
+  pointer-events: none;
 }
-.rv-disc.black { background: radial-gradient(circle at 34% 30%, #5a5f6b, #0b0d12 72%); }
-.rv-disc.white { background: radial-gradient(circle at 34% 30%, #ffffff, #c3c8d4 76%); }
-@keyframes rv-place {
-  from { transform: scale(0.55); opacity: 0.4; }
-  to { transform: scale(1); opacity: 1; }
+.rv-disc.white { transform: rotateY(180deg) scale(1); }
+.rv-disc.empty { transform: rotateY(0deg) scale(0); transition-duration: 0.16s; }
+
+.rv-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+.rv-face.b { background: radial-gradient(circle at 34% 30%, #5a5f6b, #0b0d12 72%); }
+.rv-face.w {
+  transform: rotateY(180deg);
+  background: radial-gradient(circle at 34% 30%, #ffffff, #c3c8d4 76%);
 }
 
 /* ── 조작 ── */
@@ -139,7 +167,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 18px;
   padding: 22px 16px calc(22px + env(safe-area-inset-bottom));
   background:

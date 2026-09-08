@@ -16,6 +16,12 @@ export interface Hud {
   bricksLeft: number;
 }
 
+/** 벽돌이 깨질 때 튀는 조각 — 연출 전용이라 규칙에는 영향을 주지 않는다 */
+export interface Particle {
+  x: number; y: number; vx: number; vy: number;
+  life: number; maxLife: number; size: number; hue: number;
+}
+
 const PADDLE_BASE_W = 62;
 const PADDLE_WIDE_W = 96;
 const EFFECT_MS = 9000;
@@ -30,6 +36,10 @@ export class BreakoutGame {
   score = 0;
   level = 1;
   lives = START_LIVES;
+
+  particles: Particle[] = [];
+  /** 방금 맞은 벽돌 자리 — 잠깐 번쩍이게 한다 */
+  flashes: { x: number; y: number; w: number; h: number; life: number }[] = [];
 
   private effects = new Map<ItemKind, number>();
   private slowUntil = 0;
@@ -57,6 +67,8 @@ export class BreakoutGame {
     this.level = 1;
     this.lives = START_LIVES;
     this.effects.clear();
+    this.particles = [];
+    this.flashes = [];
     this.paddle = { x: FIELD_W / 2, w: PADDLE_BASE_W };
     this.loadLevel();
     this.status = 'playing';
@@ -125,6 +137,44 @@ export class BreakoutGame {
     }
   }
 
+  /** 깨진 벽돌 자리에서 조각을 튀긴다 */
+  private burst(brick: Brick) {
+    const cx = brick.x + brick.w / 2;
+    const cy = brick.y + brick.h / 2;
+    const n = 10;
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+      const sp = 40 + Math.random() * 90;
+      this.particles.push({
+        x: cx + (Math.random() - 0.5) * brick.w,
+        y: cy,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 30,
+        life: 1,
+        maxLife: 0.42 + Math.random() * 0.3,
+        size: 1.4 + Math.random() * 2,
+        hue: brick.row,
+      });
+    }
+    if (this.particles.length > 260) this.particles.splice(0, this.particles.length - 260);
+  }
+
+  /** 조각과 번쩍임을 진행시킨다 */
+  private stepFx(dt: number) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= dt / p.maxLife;
+      if (p.life <= 0) { this.particles.splice(i, 1); continue; }
+      p.vy += 420 * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+    }
+    for (let i = this.flashes.length - 1; i >= 0; i--) {
+      this.flashes[i].life -= dt / 0.18;
+      if (this.flashes[i].life <= 0) this.flashes.splice(i, 1);
+    }
+  }
+
   update(dtMs: number) {
     if (this.status !== 'playing') return;
     const slow = performance.now() < this.slowUntil ? 0.62 : 1;
@@ -137,11 +187,14 @@ export class BreakoutGame {
 
     for (const brick of ev.hitBricks) {
       this.score += brick.hp <= 0 ? 20 : 5;
+      this.flashes.push({ x: brick.x, y: brick.y, w: brick.w, h: brick.h, life: 1 });
       if (brick.hp <= 0) {
+        this.burst(brick);
         const kind = rollItem();
         if (kind) this.items.push({ x: brick.x + brick.w / 2, y: brick.y, kind, vy: 90 });
       }
     }
+    this.stepFx(dt);
     if (ev.broken > 0) sfx.place();
 
     for (const kind of catchItems(this.paddle, this.items)) this.applyItem(kind);

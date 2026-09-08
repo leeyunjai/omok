@@ -31,6 +31,12 @@
 /* hidden 속성이 레이아웃 규칙에 밀리지 않게 한다 */
 [hidden] { display: none !important; }
 
+/* 세로 가운데 정렬 — 내용이 길어져도 위가 잘리지 않는다.
+   justify-content: center는 넘칠 때 위쪽을 잘라 먹어 스크롤로도 닿지 못한다. */
+.center-scroll { justify-content: flex-start; }
+.center-scroll > :first-child { margin-top: auto; }
+.center-scroll > :last-child { margin-bottom: auto; }
+
 html, body { height: 100%; }
 
 body {
@@ -96,11 +102,15 @@ a { color: inherit; text-decoration: none; }
 }
 .shell-title h1 {
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 0.98rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   white-space: nowrap;
 }
+.shell-mark { border-radius: 6px; flex-shrink: 0; }
 .shell-sub {
   font-size: 0.62rem;
   letter-spacing: 0.18em;

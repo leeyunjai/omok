@@ -125,7 +125,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="kk-board">
+        <div className="kk-board center-scroll">
           {board.map((r, i) => (
             <Row key={`${i}-${r.shake ? shake : 'x'}`} cells={r.cells} shake={r.shake && shake > 0} />
           ))}

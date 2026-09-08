@@ -3,6 +3,7 @@ import { GameMeta, HUB_HREF } from '../registry';
 import { getPrefs, setPrefs } from '../prefs';
 import { TutorialContent, hasSeenTutorial, markTutorialSeen } from '../tutorial';
 import { TutorialOverlay } from './Tutorial';
+import { GameMark } from './GameMark';
 
 /** 전역 효과음 토글 (모든 게임이 같은 설정을 공유한다) */
 export function SoundButton() {
@@ -63,7 +64,7 @@ export function GameShell({ meta, tutorial, actions, children }: Props) {
       <header className="shell-bar">
         <a className="shell-back" href={HUB_HREF}>← 게임 목록</a>
         <div className="shell-title">
-          <h1>{meta.emoji} {meta.title}</h1>
+          <h1><GameMark id={meta.id} size={22} className="shell-mark" />{meta.title}</h1>
           <span className="shell-sub">{meta.subtitle}</span>
         </div>
         <div className="shell-actions">

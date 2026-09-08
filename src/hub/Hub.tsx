@@ -4,6 +4,7 @@ import { getProgress } from '../shared/progress';
 import { getPrimaryBest } from '../shared/records';
 import { formatStats, getStats } from '../shared/stats';
 import { SoundButton } from '../shared/react/GameShell';
+import { GameMark } from '../shared/react/GameMark';
 import { ROOT_NS } from '../shared/storage';
 
 interface CardInfo {
@@ -43,7 +44,7 @@ function GameCard({ meta, index }: { meta: GameMeta; index: number }) {
       aria-label={`${meta.title} — ${meta.desc}`}
     >
       <div className="card-top">
-        <span className="card-icon" aria-hidden>{meta.emoji}</span>
+        <span className="card-icon" aria-hidden><GameMark id={meta.id} size={44} /></span>
         <div className="card-heading">
           <h2>{meta.title}</h2>
           <span className="card-sub">{meta.subtitle}</span>

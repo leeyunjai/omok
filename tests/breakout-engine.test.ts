@@ -64,7 +64,7 @@ describe('패들', () => {
 
 describe('벽돌', () => {
   const brick = (over: Partial<Brick> = {}): Brick =>
-    ({ x: 140, y: 190, w: 40, h: 13, hp: 1, tone: 1, ...over });
+    ({ x: 140, y: 190, w: 40, h: 13, hp: 1, tone: 1, row: 0, ...over });
 
   it('맞으면 hp가 줄고 튕긴다', () => {
     const bs = [brick()];

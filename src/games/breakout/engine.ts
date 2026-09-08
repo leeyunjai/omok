@@ -17,7 +17,7 @@ const MAX_BOUNCE_ANGLE = (60 * Math.PI) / 180;
 
 export interface Ball { x: number; y: number; vx: number; vy: number; r: number }
 export interface Paddle { x: number; w: number }
-export interface Brick { x: number; y: number; w: number; h: number; hp: number; tone: number }
+export interface Brick { x: number; y: number; w: number; h: number; hp: number; tone: number; row: number }
 
 export type ItemKind = 'wide' | 'multi' | 'slow';
 export interface Item { x: number; y: number; kind: ItemKind; vy: number }
@@ -206,6 +206,7 @@ export function buildBricks(level: number, rand: () => number = Math.random): Br
         y: top + r * (h + gap),
         w, h, hp,
         tone: hp,
+        row: r,
       });
     }
   }

@@ -5,11 +5,19 @@ import { breakoutTutorial } from './tutorial';
 import { BreakoutGame, Hud } from './game';
 import { FIELD_H, FIELD_W, PADDLE_H, PADDLE_Y } from './engine';
 import { getBest, submitBest } from '../../shared/records';
+import { shade } from '../../shared/color';
 
 const meta = gameById('breakout');
 
-const BRICK_COLORS = ['#5eead4', '#38bdf8', '#c084fc'];
+/* 줄마다 색이 다르다 — 어디를 깨고 있는지 한눈에 보이게 */
+const ROW_COLORS = [
+  '#ff6b6b', '#ff9f45', '#ffd166', '#7bd88f',
+  '#5eead4', '#4cc9f0', '#8b9cff', '#c084fc',
+];
+const rowColor = (row: number) => ROW_COLORS[row % ROW_COLORS.length];
+
 const ITEM_COLORS: Record<string, string> = { wide: '#4ade80', slow: '#60a5fa', multi: '#fbbf24' };
+const ITEM_MARK: Record<string, string> = { wide: '넓', slow: '느', multi: '멀' };
 const EFFECT_LABEL: Record<string, string> = { wide: '넓은 패들', slow: '느린 공', multi: '멀티볼' };
 
 export default function App() {
@@ -17,6 +25,8 @@ export default function App() {
   const gameRef = useRef<BreakoutGame | null>(null);
   const [hud, setHud] = useState<Hud | null>(null);
   const [best, setBest] = useState(() => getBest('breakout', 'score'));
+  /* 공마다 지나온 자리를 조금 기억해 꼬리를 그린다 (연출 전용) */
+  const trails = useRef(new WeakMap<object, { x: number; y: number }[]>());
 
   if (!gameRef.current) gameRef.current = new BreakoutGame();
   const game = gameRef.current;
@@ -55,33 +65,135 @@ export default function App() {
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.clearRect(0, 0, FIELD_W, FIELD_H);
 
-      /* 벽돌 */
+      /* 바탕 — 위쪽이 밝은 밤하늘 */
+      const bg = ctx.createLinearGradient(0, 0, 0, FIELD_H);
+      bg.addColorStop(0, '#12232b');
+      bg.addColorStop(0.45, '#0b161d');
+      bg.addColorStop(1, '#070f14');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, FIELD_W, FIELD_H);
+
+      const glow = ctx.createRadialGradient(FIELD_W / 2, 40, 10, FIELD_W / 2, 40, FIELD_W * 0.9);
+      glow.addColorStop(0, 'rgba(94, 234, 212, 0.10)');
+      glow.addColorStop(1, 'rgba(94, 234, 212, 0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, FIELD_W, FIELD_H);
+
+      /* 벽돌 — 줄마다 색, 맞을수록 어두워지고 금이 간다 */
       for (const b of game.bricks) {
-        ctx.fillStyle = BRICK_COLORS[Math.min(b.hp, BRICK_COLORS.length) - 1] ?? BRICK_COLORS[0];
-        ctx.globalAlpha = b.hp >= 3 ? 1 : b.hp === 2 ? 0.92 : 0.8;
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = 'rgba(255,255,255,0.22)';
-        ctx.fillRect(b.x, b.y, b.w, 2);
+        const base = rowColor(b.row);
+        const worn = b.tone > 1 ? b.hp / b.tone : 1;
+        const grad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+        grad.addColorStop(0, shade(base, 0.22 * worn));
+        grad.addColorStop(1, shade(base, -0.42 + 0.2 * worn));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(b.x, b.y, b.w, b.h, 3);
+        ctx.fill();
+
+        /* 윗면 하이라이트 */
+        ctx.fillStyle = `rgba(255,255,255,${0.3 * worn + 0.06})`;
+        ctx.beginPath();
+        ctx.roundRect(b.x + 1.5, b.y + 1.2, b.w - 3, 2, 1);
+        ctx.fill();
+
+        /* 남은 hp가 줄면 금 */
+        if (b.tone > 1 && b.hp < b.tone) {
+          ctx.strokeStyle = 'rgba(0,0,0,0.42)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(b.x + b.w * 0.3, b.y + 1);
+          ctx.lineTo(b.x + b.w * 0.45, b.y + b.h * 0.6);
+          ctx.lineTo(b.x + b.w * 0.35, b.y + b.h - 1);
+          if (b.hp <= b.tone - 2) {
+            ctx.moveTo(b.x + b.w * 0.68, b.y + 1);
+            ctx.lineTo(b.x + b.w * 0.58, b.y + b.h - 1);
+          }
+          ctx.stroke();
+        }
       }
 
-      /* 아이템 */
-      for (const it of game.items) {
-        ctx.fillStyle = ITEM_COLORS[it.kind] ?? '#fff';
+      /* 방금 맞은 자리 번쩍임 */
+      for (const f of game.flashes) {
+        ctx.fillStyle = `rgba(255,255,255,${0.75 * f.life})`;
         ctx.beginPath();
-        ctx.arc(it.x, it.y, 5, 0, Math.PI * 2);
+        ctx.roundRect(f.x, f.y, f.w, f.h, 3);
         ctx.fill();
       }
 
+      /* 깨진 조각 */
+      for (const p of game.particles) {
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = rowColor(p.hue);
+        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      }
+      ctx.globalAlpha = 1;
+
+      /* 아이템 — 무엇인지 글자로 */
+      for (const it of game.items) {
+        const c = ITEM_COLORS[it.kind] ?? '#fff';
+        ctx.fillStyle = c;
+        ctx.shadowColor = c;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.roundRect(it.x - 8, it.y - 6, 16, 12, 6);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(10,20,18,0.9)';
+        ctx.font = '700 8px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ITEM_MARK[it.kind] ?? '?', it.x, it.y + 0.5);
+      }
+
+      /* 공 꼬리 */
+      for (const b of game.balls) {
+        let tail = trails.current.get(b);
+        if (!tail) { tail = []; trails.current.set(b, tail); }
+        tail.push({ x: b.x, y: b.y });
+        if (tail.length > 9) tail.shift();
+        for (let i = 0; i < tail.length - 1; i++) {
+          const t = (i + 1) / tail.length;
+          ctx.globalAlpha = t * 0.35;
+          ctx.fillStyle = '#8ef7e6';
+          ctx.beginPath();
+          ctx.arc(tail[i].x, tail[i].y, b.r * t * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
       /* 패들 */
-      ctx.fillStyle = '#e2f5f2';
+      const px = game.paddle.x - game.paddle.w / 2;
+      const pg = ctx.createLinearGradient(0, PADDLE_Y, 0, PADDLE_Y + PADDLE_H);
+      pg.addColorStop(0, '#f2fffd');
+      pg.addColorStop(0.5, '#a9ece2');
+      pg.addColorStop(1, '#4fb3a4');
+      ctx.shadowColor = 'rgba(94, 234, 212, 0.55)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = pg;
       ctx.beginPath();
-      ctx.roundRect(game.paddle.x - game.paddle.w / 2, PADDLE_Y, game.paddle.w, PADDLE_H, 5);
+      ctx.roundRect(px, PADDLE_Y, game.paddle.w, PADDLE_H, PADDLE_H / 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(px + game.paddle.w / 2 - 6, PADDLE_Y + 3.5);
+      ctx.lineTo(px + game.paddle.w / 2 + 6, PADDLE_Y + 3.5);
+      ctx.stroke();
 
       /* 공 */
-      ctx.fillStyle = '#fff';
       for (const b of game.balls) {
+        const g = ctx.createRadialGradient(b.x - b.r * 0.35, b.y - b.r * 0.4, 0.5, b.x, b.y, b.r * 2.2);
+        g.addColorStop(0, '#ffffff');
+        g.addColorStop(0.4, '#dffaf4');
+        g.addColorStop(1, 'rgba(94, 234, 212, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r * 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.fill();

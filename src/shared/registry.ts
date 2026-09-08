@@ -3,9 +3,16 @@ export type Category = '보드' | '퍼즐' | '액션' | '데일리';
 
 export const CATEGORIES: Category[] = ['보드', '퍼즐', '액션', '데일리'];
 
+/** 게임 식별자 — 저장소 이름이기도 하므로 한번 정하면 바꾸지 않는다 */
+export type GameId =
+  | 'omok' | 'janggi' | 'sudoku' | 'tetris' | 'reversi' | 'kkodle'
+  | 'minesweeper' | 'nonogram' | 'solitaire' | 'g2048' | 'breakout' | 'yut';
+
 /** 허브와 각 게임이 함께 쓰는 게임 목록(메타데이터) */
 export interface GameMeta {
-  id: string;
+  id: GameId;
+  /** 페이지 경로. 없으면 id를 그대로 쓴다 (id는 저장소 이름이라 경로와 다를 수 있다) */
+  path?: string;
   title: string;
   /** 부제 (원어/영문) */
   subtitle: string;
@@ -170,6 +177,7 @@ export const GAMES: GameMeta[] = [
   },
   {
     id: 'g2048',
+    path: '2048',
     title: '2048',
     subtitle: '2048 · 숫자 합치기',
     emoji: '🧮',
@@ -218,13 +226,16 @@ export const GAMES: GameMeta[] = [
   },
 ];
 
-export function gameById(id: string): GameMeta {
+export function gameById(id: GameId): GameMeta {
   const meta = GAMES.find((g) => g.id === id);
   if (!meta) throw new Error(`알 수 없는 게임: ${id}`);
   return meta;
 }
 
 /** 허브(루트)에서 게임 페이지로 가는 상대 경로 */
-export const gameHref = (id: string) => `games/${id}/`;
+export const gameHref = (id: GameId) => {
+  const meta = GAMES.find((g) => g.id === id);
+  return `games/${meta?.path ?? id}/`;
+};
 /** 게임 페이지(games/<id>/)에서 허브로 돌아가는 상대 경로 */
 export const HUB_HREF = '../../';
