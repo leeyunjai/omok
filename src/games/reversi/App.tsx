@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { GameShell } from '../../shared/react/GameShell';
 import { useKeys } from '../../shared/react/useKeys';
 import { gameById } from '../../shared/registry';
@@ -230,8 +230,6 @@ export default function App() {
     n: () => { if (status !== 'menu') restart(); },
     Escape: () => { if (status !== 'menu') goToMenu(); },
   });
-
-  useEffect(() => { document.title = '리버시 · games'; }, []);
 
   return (
     <GameShell meta={meta} tutorial={reversiTutorial}>

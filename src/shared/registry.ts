@@ -152,6 +152,22 @@ export const GAMES: GameMeta[] = [
     tags: ['퍼즐', '싱글', '기록'],
     accent: '#a78bfa',
   },
+  {
+    id: 'solitaire',
+    title: '솔리테어',
+    subtitle: 'KLONDIKE',
+    emoji: '🃏',
+    desc: '클래식 클론다이크. 한 번 더 누르면 알아서 올라가고, 되돌리기와 자동 완성까지.',
+    controls: '탭 · 두 번 탭',
+    lore: [
+      '뒤집힌 카드는 아직 오지 않은 시간이다.',
+      '한 장을 넘기려면 그 위의 것들을 먼저 치워야 한다.',
+      '순서를 지키면 언젠가 전부 제자리에 놓인다.',
+    ],
+    category: '퍼즐',
+    tags: ['카드', '싱글', '기록'],
+    accent: '#10a37f',
+  },
 ];
 
 export function gameById(id: string): GameMeta {
